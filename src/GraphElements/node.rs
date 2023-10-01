@@ -1,4 +1,6 @@
 use super::types::*;
+use std::sync::{Arc, Mutex};
+use crate::id_manager as idm;
 pub struct Node {
     pub id: u64,
     pub name: String,
@@ -10,15 +12,15 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(id: u64, name: String, position: (f64, f64), scale: f64, grid: GridRef) -> Node {
-        Node {
-            id,
+    pub fn new(name: String, position: (f64, f64), scale: f64, grid: GridRef) -> Arc<Mutex<Node>> {
+        Arc::new(Mutex::new(Node {
+            id: idm::node_id(),
             name,
             position,
             scale,
             edges: Vec::new(),
             grid,
-        }
+        }))
     }
     pub fn add_edge(&mut self, edge: WeakEdgeRef) {
         self.edges.push(edge);

@@ -16,7 +16,7 @@ impl GridOwner {
 
     pub fn get_grid(&self, id: u64) -> Option<GridRef> {
         for grid in &self.grids {
-            if grid.borrow().id == id {
+            if grid.lock().unwrap().id == id {
                 return Some(grid.clone());
             }
         }

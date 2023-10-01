@@ -15,7 +15,7 @@ impl GraphOwner {
     }
     pub fn get_graph(&self, id: u64) -> Option<GraphRef> {
         for graph in &self.graphs {
-            if graph.borrow().id == id {
+            if graph.lock().unwrap().id == id {
                 return Some(graph.clone());
             }
         }

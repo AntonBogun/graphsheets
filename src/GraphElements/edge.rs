@@ -1,4 +1,4 @@
-use std::{rc::Rc, cell::RefCell};
+use std::{sync::Arc, sync::Mutex};
 use crate::id_manager;
 use super::types::*;
 pub struct Edge {
@@ -11,23 +11,17 @@ pub struct Edge {
 
 impl Edge {
     pub fn new(from: NodeRef, to: NodeRef, name: String) -> EdgeRef {
-        Rc::new(RefCell::new(Edge {
+        Arc::new(Mutex::new(Edge {
             id: id_manager::edge_id(),
             name: name,
-            from: Rc::downgrade(&from),
-            to: Rc::downgrade(&to),
+            from: Arc::downgrade(&from),
+            to: Arc::downgrade(&to),
         }))
     }
-    pub fn get_from(&self) -> Option<NodeRef> {
-        match self.from.upgrade() {
-            Some(node) => Some(node),
-            None => None,
-        }
+    pub fn get_from(&self) -> NodeRef {
+        self.from.upgrade().unwrap()
     }
-    pub fn get_to(&self) -> Option<NodeRef> {
-        match self.to.upgrade() {
-            Some(node) => Some(node),
-            None => None,
-        }
+    pub fn get_to(&self) -> NodeRef {
+        self.to.upgrade().unwrap()
     }
 }
