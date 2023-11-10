@@ -3,7 +3,7 @@ use notan::{graphics::renderer, draw::Font};
 use super::cell::Cell;
 
 pub struct GraphicsContext{
-    pub render_region: (u32, u32, u32, u32),
+    pub render_origin: (f32, f32),
     pub render_scale: f32,
     pub current_depth: u32,
     pub max_depth: u32,
@@ -27,7 +27,7 @@ impl Render for Cell{
                 for (x, y, id) in sheet.iter() {
                     let (x, y) = (x as f32, y as f32);
                     let (x, y) = (x * ctx.render_scale, y * ctx.render_scale);
-                    let (x, y) = (x + ctx.render_region.0 as f32, y + ctx.render_region.1 as f32);
+                    let (x, y) = (x + ctx.render_origin.0 as f32, y + ctx.render_origin.1 as f32);
                     let (w, h) = (50.0 * ctx.render_scale, 50.0 * ctx.render_scale);
                     renderer.draw_rect(x*51.0, y*51.0, w, h);
                     renderer.draw_text(x*51.0, y*51.0, id.raw.to_string().as_str(), &ctx.font);
