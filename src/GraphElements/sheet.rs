@@ -6,47 +6,27 @@ pub struct Sheet<T> {
   underlying : Vec<T>,
 }
 
-// FIXME this probably requires unsafe
-// struct SheetIteratorMut<'a, T>(&'a mut Sheet<T>, usize, usize);
-// impl<'a, T> Iterator for SheetIteratorMut<'a, T> {
-//   type Item = &'a mut T;
-
-//   fn next(&mut self) -> Option<Self::Item> {
-//     let (oldx, oldy) = (self.1, self.2);
-//     self.1 += 1;
-//     if self.1 >= self.0.width {
-//       self.1 -= self.0.width;
-//       self.2 += 1;
-//     }
-//     if oldx < self.0.width && oldy < self.0.height {
-//       Some(self.0.get_at_mut(self.1, self.2))
-//     } else {
-//       None
-//     }
-//   }
-// }
-
 impl<T> Sheet<T> {
-  pub fn get_row(&self, y : usize) -> Option<&[T]> { self.underlying.chunks(self.width).nth(y) }
+  pub fn get_row(&self, y : usize) -> Option<&[T]> {
+    self.underlying.chunks(self.width).nth(y)
+  }
   pub fn get_row_mut(&mut self, y : usize) -> Option<&mut [T]> {
     self.underlying.chunks_mut(self.width).nth(y)
   }
-  pub fn get_at(&self, x : usize, y : usize) -> Option<&T> { Some(&self.get_row(y)?[x]) }
+  pub fn get_at(&self, x : usize, y : usize) -> Option<&T> {
+    Some(&self.get_row(y)?[x])
+  }
   pub fn get_at_mut(&mut self, x : usize, y : usize) -> Option<&mut T> {
     Some(&mut self.get_row_mut(y)?[x])
   }
   pub fn iter(&self) -> impl Iterator<Item = ((usize, usize), &T)> {
     let xs = std::iter::repeat(0..self.width).flatten();
-    let ys = (0usize..)
-      .map(|y| std::iter::repeat(y).take(self.width))
-      .flatten();
+    let ys = (0usize..).flat_map(|y| std::iter::repeat(y).take(self.width));
     xs.zip(ys).zip(self.underlying.iter())
   }
   pub fn iter_mut(&mut self) -> impl Iterator<Item = ((usize, usize), &mut T)> {
     let xs = std::iter::repeat(0..self.width).flatten();
-    let ys = (0usize..)
-      .map(|y| std::iter::repeat(y).take(self.width))
-      .flatten();
+    let ys = (0usize..).flat_map(|y| std::iter::repeat(y).take(self.width));
     xs.zip(ys).zip(self.underlying.iter_mut())
   }
   pub fn pure(inner : T) -> Self {
@@ -61,7 +41,7 @@ impl<T> Sheet<T> {
 fn test_sheet_creation() {
   let mut sheet = Sheet::pure(1);
   assert_eq!(*sheet.get_at(0, 0).unwrap(), 1);
-  mem::replace(sheet.get_at_mut(0, 0).unwrap(), 2);
+  let _ = mem::replace(sheet.get_at_mut(0, 0).unwrap(), 2);
   assert_eq!(*sheet.get_at(0, 0).unwrap(), 2);
   assert_eq!(*sheet.iter().next().unwrap().1, 2);
 }

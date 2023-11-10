@@ -9,21 +9,31 @@ pub struct Idx<T> {
 }
 
 impl<T> Clone for Idx<T> {
-  fn clone(&self) -> Self { *self }
+  fn clone(&self) -> Self {
+    *self
+  }
 }
 impl<T> Copy for Idx<T> {}
 impl<T> PartialEq for Idx<T> {
-  fn eq(&self, other : &Self) -> bool { self.raw == other.raw }
+  fn eq(&self, other : &Self) -> bool {
+    self.raw == other.raw
+  }
 }
 impl<T> Eq for Idx<T> {}
 impl<T> PartialOrd for Idx<T> {
-  fn partial_cmp(&self, other : &Self) -> Option<std::cmp::Ordering> { Some(self.cmp(other)) }
+  fn partial_cmp(&self, other : &Self) -> Option<std::cmp::Ordering> {
+    Some(self.cmp(other))
+  }
 }
 impl<T> Ord for Idx<T> {
-  fn cmp(&self, other : &Self) -> std::cmp::Ordering { self.raw.cmp(&other.raw) }
+  fn cmp(&self, other : &Self) -> std::cmp::Ordering {
+    self.raw.cmp(&other.raw)
+  }
 }
 impl<T> std::hash::Hash for Idx<T> {
-  fn hash<H : std::hash::Hasher>(&self, state : &mut H) { self.raw.hash(state); }
+  fn hash<H : std::hash::Hasher>(&self, state : &mut H) {
+    self.raw.hash(state);
+  }
 }
 
 impl<T> Idx<T> {
@@ -46,8 +56,12 @@ pub enum Cell {
 }
 
 impl Cell {
-  fn nothing() -> Cell { Cell::Atom(Arc::new(())) }
-  fn pure_sheet(inside : Idx<Cell>) -> Cell { Cell::S(Sheet::pure(inside)) }
+  fn nothing() -> Cell {
+    Cell::Atom(Arc::new(()))
+  }
+  fn pure_sheet(inside : Idx<Cell>) -> Cell {
+    Cell::S(Sheet::pure(inside))
+  }
   fn pure_graph(inside : Idx<Cell>) -> Cell {
     Cell::Graph {
       nodes : vec![inside],
@@ -106,8 +120,12 @@ pub struct CellArena {
 // }
 
 impl CellArena {
-  pub fn get(&self, id : Idx<Cell>) -> &Cell { &self.raw[id.raw] }
-  pub fn get_mut(&mut self, id : Idx<Cell>) -> &mut Cell { &mut self.raw[id.raw] }
+  pub fn get(&self, id : Idx<Cell>) -> &Cell {
+    &self.raw[id.raw]
+  }
+  pub fn get_mut(&mut self, id : Idx<Cell>) -> &mut Cell {
+    &mut self.raw[id.raw]
+  }
   pub fn put(&mut self, cell : Cell) -> Idx<Cell> {
     self.raw.push(cell);
     Idx {
