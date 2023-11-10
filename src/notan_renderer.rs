@@ -34,10 +34,10 @@ fn main() -> Result<(), String> {
 
 fn setup(gfx: &mut Graphics) -> State {
     let mut sheet = Sheet::<Idx<Cell>>::pure(Idx::from_raw(1));
-    sheet = sheet.insert_row(1, &Idx::from_raw(1));
-    sheet = sheet.insert_row(0, &Idx::from_raw(1));
-    sheet = sheet.insert_column(1, &Idx::from_raw(1));
-    sheet = sheet.insert_column(0, &Idx::from_raw(1));
+    sheet.insert_row(1, &Idx::from_raw(1));
+    sheet.insert_row(0, &Idx::from_raw(1));
+    sheet.insert_column(1, &Idx::from_raw(1));
+    sheet.insert_column(0, &Idx::from_raw(1));
     let mut cell = gs::cell::Cell::S(sheet);
     let font = gfx
             .create_font(include_bytes!("assets/unifont-15.1.04.otf"))

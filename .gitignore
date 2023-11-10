@@ -2,4 +2,4 @@
 # ignore anything named tempcoderunnerfile
 **/tempcoderunnerfile*
 .vscode
-death
+.envrc

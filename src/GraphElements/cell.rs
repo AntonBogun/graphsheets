@@ -61,49 +61,49 @@ pub struct CellArena {
   raw : Vec<Cell>,
 }
 
-pub struct CellIterator<'a> {
-  of : &'a CellArena,
-  visited : HashSet<Idx<Cell>>,
-  next : Idx<Cell>,
-}
+// pub struct CellIterator<'a> {
+//   of : &'a CellArena,
+//   visited : HashSet<Idx<Cell>>,
+//   next : Idx<Cell>,
+// }
 
-impl CellIterator<'_> {
-  fn new_from_root(of : &CellArena, id : Idx<Cell>) -> CellIterator {
-    CellIterator {
-      of,
-      visited : HashSet::new(),
-      next : id,
-    }
-  }
-}
+// impl CellIterator<'_> {
+//   fn new_from_root(of : &CellArena, id : Idx<Cell>) -> CellIterator {
+//     CellIterator {
+//       of,
+//       visited : HashSet::new(),
+//       next : id,
+//     }
+//   }
+// }
 
-impl<'a> Iterator for CellIterator<'a> {
-  type Item = &'a Cell;
+// impl<'a> Iterator for CellIterator<'a> {
+//   type Item = &'a Cell;
 
-  fn next(&mut self) -> Option<Self::Item> {
-    let ret = self.of.get(self.next);
-    match ret {
-      Cell::Graph { nodes, edges: _ } => {
-        for n in nodes {
-          if !(self.visited.contains(n)) {
-            self.next = *n;
-            break;
-          }
-        }
-      }
-      Cell::S(sheet) => {
-        for (_, _, n) in sheet.iter() {
-          if !(self.visited.contains(n)) {
-            self.next = *n;
-            break;
-          }
-        }
-      }
-      Cell::Atom(_) => {},
-    }
-    Some(ret)
-  }
-}
+//   fn next(&mut self) -> Option<Self::Item> {
+//     let ret = self.of.get(self.next);
+//     match ret {
+//       Cell::Graph { nodes, edges: _ } => {
+//         for n in nodes {
+//           if !(self.visited.contains(n)) {
+//             self.next = *n;
+//             break;
+//           }
+//         }
+//       }
+//       Cell::S(sheet) => {
+//         for (_, _, n) in sheet.iter() {
+//           if !(self.visited.contains(n)) {
+//             self.next = *n;
+//             break;
+//           }
+//         }
+//       }
+//       Cell::Atom(_) => {},
+//     }
+//     Some(ret)
+//   }
+// }
 
 impl CellArena {
   pub fn get(&self, id : Idx<Cell>) -> &Cell { &self.raw[id.raw] }

@@ -28,6 +28,7 @@
             rust
             cargo-binutils
             pkg-config
+            cmake
           ];
         };
       }

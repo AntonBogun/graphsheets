@@ -24,7 +24,7 @@ impl Render for Cell{
     fn render(&self, ctx: &mut GraphicsContext, renderer: &mut dyn GraphicsRenderer) {
         match self {
             Cell::S(sheet) => {
-                for (x, y, id) in sheet.iter() {
+                for ((x, y), id) in sheet.iter() {
                     let (x, y) = (x as f32, y as f32);
                     let (x, y) = (x * ctx.render_scale, y * ctx.render_scale);
                     let (x, y) = (x + ctx.render_origin.0 as f32, y + ctx.render_origin.1 as f32);
@@ -36,5 +36,5 @@ impl Render for Cell{
             Cell::Graph { nodes, edges } => todo!(),
             Cell::Atom(_) => todo!(),
         }
-    }   
+    }
 }
