@@ -65,6 +65,20 @@ fn event(state : &mut State, evt : Event) {
         state.panning = true;
         state.initial_mouse_pos = (x, y);
       }
+      if (button == MouseButton::Right) {
+        match &mut state.cell {
+            Cell::S(sheet) => sheet.insert_row(0, &Idx::from_raw(2)),
+            Cell::Atom(_) => todo!(),
+            Cell::Graph { nodes, edges } => todo!(),
+        }
+      }
+      if (button == MouseButton::Left) {
+        match &mut state.cell {
+            Cell::S(sheet) => sheet.insert_column(0, &Idx::from_raw(2)),
+            Cell::Atom(_) => todo!(),
+            Cell::Graph { nodes, edges } => todo!(),
+        }
+      }
     }
     Event::MouseUp { button, .. } => {
       if (button == MouseButton::Middle) {
@@ -74,8 +88,8 @@ fn event(state : &mut State, evt : Event) {
     Event::MouseMove { x, y, .. } => {
       if (state.panning) {
         let (dx, dy) = (x - state.initial_mouse_pos.0, y - state.initial_mouse_pos.1);
-        state.render_origin.0 += dx as f32 / state.render_scale;
-        state.render_origin.1 += dy as f32 / state.render_scale;
+        state.render_origin.0 += dx as f32;
+        state.render_origin.1 += dy as f32;
         state.initial_mouse_pos = (x, y);
       }
     }
@@ -99,21 +113,21 @@ fn draw(gfx : &mut Graphics, state : &mut State) {
   let mut draw = gfx.create_draw();
   draw.clear(Color::BLACK);
 
-  draw_cell(&state.cell)(&mut draw, state);
+  let mut ctx = gs::rendering::GraphicsContext {
+    render_origin : state.render_origin,
+    render_scale : state.render_scale,
+    current_depth : 0,
+    max_depth : state.max_depth,
+    font : state.font,
+  };
+  state.cell.render(&mut ctx, &mut draw);
 
   gfx.render(&draw);
 }
 
 fn draw_cell(cell : &Cell) -> impl Fn(&mut Draw, &State) + '_ {
   |draw, state| {
-    let mut ctx = gs::rendering::GraphicsContext {
-      render_origin : state.render_origin,
-      render_scale : state.render_scale,
-      current_depth : 0,
-      max_depth : state.max_depth,
-      font : state.font,
-    };
-    cell.render(&mut ctx, draw);
+    
   }
 }
 

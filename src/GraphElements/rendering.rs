@@ -25,15 +25,15 @@ impl Render for Cell {
     match self {
       Cell::S(sheet) => {
         for ((x, y), id) in sheet.iter() {
-          let (x, y) = (x as f32, y as f32);
+          let (x, y) = (x as f32 * 50.0, y as f32 * 50.0);
           let (x, y) = (x * ctx.render_scale, y * ctx.render_scale);
+          let (w, h) = (50.0 * ctx.render_scale, 50.0 * ctx.render_scale);
           let (x, y) = (
             x + ctx.render_origin.0 as f32,
             y + ctx.render_origin.1 as f32,
           );
-          let (w, h) = (50.0 * ctx.render_scale, 50.0 * ctx.render_scale);
-          renderer.draw_rect(x * 51.0, y * 51.0, w, h);
-          renderer.draw_text(x * 51.0, y * 51.0, id.raw.to_string().as_str(), &ctx.font);
+          renderer.draw_rect(x, y, w, h);
+          //renderer.draw_text(x, y, id.raw.to_string().as_str(), &ctx.font);
         }
       }
       Cell::Graph { nodes, edges } => todo!(),
