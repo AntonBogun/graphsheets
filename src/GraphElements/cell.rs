@@ -4,7 +4,7 @@ use super::{atomic::Atomic, sheet::Sheet};
 
 #[derive(Debug)]
 pub struct Idx<T> {
-  raw : usize,
+  pub raw : usize,
   _phatom : PhantomData<fn() -> T>,
 }
 
@@ -27,7 +27,7 @@ impl<T> std::hash::Hash for Idx<T> {
 }
 
 impl<T> Idx<T> {
-  fn from_raw(r : usize) -> Idx<T> {
+  pub fn from_raw(r : usize) -> Idx<T> {
     Idx {
       raw : r,
       _phatom : PhantomData,
