@@ -12,13 +12,13 @@ use notan::prelude::*;
 
 #[derive(AppState)]
 struct State {
-  cell : Cell,
-  font : Font,
-  render_scale : f32,
-  render_origin : (f32, f32),
-  max_depth : u32,
-  panning : bool,
-  initial_mouse_pos : (i32, i32),
+  cell: Cell,
+  font: Font,
+  render_scale: f32,
+  render_origin: (f32, f32),
+  max_depth: u32,
+  panning: bool,
+  initial_mouse_pos: (i32, i32),
 }
 
 #[notan_main]
@@ -31,7 +31,7 @@ fn main() -> Result<(), String> {
     .build()
 }
 
-fn setup(gfx : &mut Graphics) -> State {
+fn setup(gfx: &mut Graphics) -> State {
   let mut sheet = Sheet::<Idx<Cell>>::pure(Idx::from_raw(1));
   sheet.insert_row(1, &Idx::from_raw(1));
   sheet.insert_row(0, &Idx::from_raw(1));
@@ -42,17 +42,17 @@ fn setup(gfx : &mut Graphics) -> State {
     .create_font(include_bytes!("assets/unifont-15.1.04.otf"))
     .unwrap();
   State {
-    cell : cell,
-    font : font,
-    render_scale : 1.0,
-    render_origin : (0.0, 0.0),
-    max_depth : 0,
-    panning : false,
-    initial_mouse_pos : (0, 0),
+    cell: cell,
+    font: font,
+    render_scale: 1.0,
+    render_origin: (0.0, 0.0),
+    max_depth: 0,
+    panning: false,
+    initial_mouse_pos: (0, 0),
   }
 }
 
-fn event(state : &mut State, evt : Event) {
+fn event(state: &mut State, evt: Event) {
   match evt {
     Event::MouseWheel {
       delta_x: _,
@@ -67,16 +67,16 @@ fn event(state : &mut State, evt : Event) {
       }
       if (button == MouseButton::Right) {
         match &mut state.cell {
-            Cell::S(sheet) => sheet.insert_row(0, &Idx::from_raw(2)),
-            Cell::Atom(_) => todo!(),
-            Cell::Graph { nodes, edges } => todo!(),
+          Cell::S(sheet) => sheet.insert_row(0, &Idx::from_raw(2)),
+          Cell::Atom(_) => todo!(),
+          Cell::Graph { nodes, edges } => todo!(),
         }
       }
       if (button == MouseButton::Left) {
         match &mut state.cell {
-            Cell::S(sheet) => sheet.insert_column(0, &Idx::from_raw(2)),
-            Cell::Atom(_) => todo!(),
-            Cell::Graph { nodes, edges } => todo!(),
+          Cell::S(sheet) => sheet.insert_column(0, &Idx::from_raw(2)),
+          Cell::Atom(_) => todo!(),
+          Cell::Graph { nodes, edges } => todo!(),
         }
       }
     }
@@ -98,37 +98,40 @@ fn event(state : &mut State, evt : Event) {
 }
 
 impl GraphicsRenderer for Draw {
-  fn draw_line(&mut self, x1 : f32, y1 : f32, x2 : f32, y2 : f32) {
+  fn draw_line(&mut self, x1: f32, y1: f32, x2: f32, y2: f32) {
     self.line((x1, y1), (x2, y2));
   }
-  fn draw_rect(&mut self, x : f32, y : f32, w : f32, h : f32) {
+  fn draw_rect(&mut self, x: f32, y: f32, w: f32, h: f32) {
     self.rect((x, y), (w, h));
   }
-  fn draw_text(&mut self, x : f32, y : f32, text : &str, font : &Font) {
+  fn draw_text(&mut self, x: f32, y: f32, text: &str, font: &Font) {
     self.text(font, text).color(Color::BLUE).position(x, y);
   }
 }
 
-fn draw(gfx : &mut Graphics, state : &mut State) {
+fn draw(gfx: &mut Graphics, state: &mut State) {
   let mut draw = gfx.create_draw();
   draw.clear(Color::BLACK);
 
   let mut ctx = gs::rendering::GraphicsContext {
-    render_origin : state.render_origin,
-    render_scale : state.render_scale,
-    current_depth : 0,
-    max_depth : state.max_depth,
-    font : state.font,
+    render_origin: state.render_origin,
+    render_scale: state.render_scale,
+    current_depth: 0,
+    max_depth: state.max_depth,
+    font: state.font,
   };
+  
+	use std::time::Instant;
+	let now = Instant::now();
   state.cell.render(&mut ctx, &mut draw);
+	let elapsed = now.elapsed();
+	println!("Elapsed: {:.2?}", elapsed);
 
   gfx.render(&draw);
 }
 
-fn draw_cell(cell : &Cell) -> impl Fn(&mut Draw, &State) + '_ {
-  |draw, state| {
-    
-  }
+fn draw_cell(cell: &Cell) -> impl Fn(&mut Draw, &State) + '_ {
+  |draw, state| {}
 }
 
 // struct Position(Vec3);

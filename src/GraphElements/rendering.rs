@@ -34,7 +34,9 @@ impl Render for Cell {
           );
 
           renderer.draw_rect(x, y, w, h);
-          renderer.draw_text(x, y, (id.raw as f32*x).to_string().as_str())//, &ctx.font);
+          
+          renderer.draw_text(x, y, (id.raw as f32*x).to_string().as_str());//, &ctx.font);
+          
         }
       }
       Cell::Graph { nodes, edges } => todo!(),
