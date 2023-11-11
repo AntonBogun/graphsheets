@@ -7,13 +7,13 @@ pub struct GraphicsContext {
   pub render_scale : f32,
   pub current_depth : u32,
   pub max_depth : u32,
-  pub font : Font,
+  //pub font : Font,
 }
 
 pub trait GraphicsRenderer {
   fn draw_line(&mut self, x1 : f32, y1 : f32, x2 : f32, y2 : f32);
   fn draw_rect(&mut self, x : f32, y : f32, w : f32, h : f32);
-  fn draw_text(&mut self, x : f32, y : f32, text : &str, font : &Font);
+  fn draw_text(&mut self, x : f32, y : f32, text : &str);//, font : &Font);
 }
 
 pub trait Render {
@@ -32,8 +32,9 @@ impl Render for Cell {
             x + ctx.render_origin.0 as f32,
             y + ctx.render_origin.1 as f32,
           );
+
           renderer.draw_rect(x, y, w, h);
-          //renderer.draw_text(x, y, id.raw.to_string().as_str(), &ctx.font);
+          renderer.draw_text(x, y, (id.raw as f32*x).to_string().as_str())//, &ctx.font);
         }
       }
       Cell::Graph { nodes, edges } => todo!(),
