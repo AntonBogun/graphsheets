@@ -15,11 +15,11 @@ impl GraphicsRenderer for MacroquadRenderer {
   fn draw_line(&mut self, x1: f32, y1: f32, x2: f32, y2: f32) {
     draw_line(x1, y1, x2, y2, 15.0, WHITE);
   }
-  fn draw_rect(&mut self, x: f32, y: f32, w: f32, h: f32) {
-    draw_rectangle(x, y, w, h, WHITE);
+  fn draw_rect(&mut self, x: f32, y: f32, w: f32, h: f32, color: Color) {
+    draw_rectangle(x, y, w, h, color);
   }
-  fn draw_text(&mut self, x: f32, y: f32, text: &str) {
-    draw_text(text, x, y, 30.0, BLUE);
+  fn draw_text(&mut self, x: f32, y: f32, text: &str, size: f32) {
+    draw_text(text, x, y, size, BLUE);
   }
 }
 
@@ -47,6 +47,7 @@ async fn main() {
 
   loop {
     clear_background(Color::new(0.11, 0.12, 0.13, 1.0));
+	draw_text(format!("FPS: {}", get_fps()).as_str(), 0., 16., 32., WHITE);
 
     if (is_mouse_button_pressed(MouseButton::Middle)) {
       panning = true;
@@ -88,7 +89,7 @@ async fn main() {
 
 	
     cell.render(&mut ctx, &mut renderer);
-
+	
     next_frame().await
   }
 }

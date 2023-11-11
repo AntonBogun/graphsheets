@@ -1,0 +1,3 @@
+struct View {
+	cell: Cell,
+}
