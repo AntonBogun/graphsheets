@@ -38,7 +38,7 @@ impl Render for Cell {
           if(12.0*ctx.render_scale<8.0){
             renderer.draw_rect(x, y, 12.0*ctx.render_scale*2.0, 12.0*ctx.render_scale, BLUE);
           } else {
-            renderer.draw_text(x, y, (id.raw as f32*x).to_string().as_str(), 12.0*ctx.render_scale);//, &ctx.font);
+            renderer.draw_text(x, y, "2", 12.0*ctx.render_scale);//, &ctx.font);
 
           }
           
