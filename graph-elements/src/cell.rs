@@ -1,4 +1,4 @@
-use std::{collections::HashSet, marker::PhantomData, sync::Arc, vec};
+use std::{marker::PhantomData, sync::Arc, vec};
 
 use super::{atomic::Atomic, sheet::Sheet};
 
@@ -120,6 +120,7 @@ pub struct CellArena {
 // }
 
 impl CellArena {
+  #[must_use]
   pub fn get(&self, id : Idx<Cell>) -> &Cell {
     &self.raw[id.raw]
   }
@@ -136,6 +137,7 @@ impl CellArena {
   /// create a new `CellArena` with the first element [0] as the empty cell,
   /// and the second element [1] as root containing a 1x1 sheet, pointing to the
   /// empty cell
+  #[must_use]
   pub fn new() -> CellArena {
     let mut ret = CellArena { raw : vec![] };
     let nothing = ret.put(Cell::nothing());
@@ -143,5 +145,11 @@ impl CellArena {
     let root = ret.put(Cell::pure_sheet(nothing));
     assert_eq!(root.raw, 1);
     ret
+  }
+}
+
+impl Default for CellArena {
+  fn default() -> Self {
+    Self::new()
   }
 }
