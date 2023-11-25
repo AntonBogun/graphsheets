@@ -3,3 +3,5 @@
 **/tempcoderunnerfile*
 .vscode
 .envrc
+dist
+result*
