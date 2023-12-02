@@ -566,6 +566,7 @@ dependencies = [
 name = "graphsheets-yew"
 version = "0.0.0"
 dependencies = [
+ "graph-elements",
  "js-sys",
  "serde",
  "serde_json",
