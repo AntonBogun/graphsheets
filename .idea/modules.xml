@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/graphsheets.iml" filepath="$PROJECT_DIR$/graphsheets.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/graphsheets.iml" filepath="$PROJECT_DIR$/.idea/graphsheets.iml" />
     </modules>
   </component>
 </project>

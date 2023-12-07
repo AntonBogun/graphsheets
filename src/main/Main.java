@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
+import UI.GraphSheetComponent;
 import graphElements.Edge;
 import graphElements.Graph;
 import graphElements.Node;
