@@ -1,4 +1,4 @@
-package graphElements;
+package fi.graphsheets.graphelements;
 
 public class Edge {
 	
@@ -12,11 +12,6 @@ public class Edge {
 		this.name = name;
 	}
 
-	public Edge() {
-		this.start = new Node();
-		this.end = new Node();
-		this.name = "dummy";
-	}
 
 	public Node getStart() {
 		return start;

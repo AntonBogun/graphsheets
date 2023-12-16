@@ -1,4 +1,4 @@
-package graphElements;
+package fi.graphsheets.graphelements;
 
 import java.util.ArrayList;
 
