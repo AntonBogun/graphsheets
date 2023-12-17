@@ -1,6 +1,8 @@
 package fi.graphsheets;
 
+import java.awt.Color;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import javax.swing.JFrame;
 import javax.swing.JLayer;
@@ -21,7 +23,7 @@ public class Main{
 		JFrame frame = new JFrame();
 		frame.setTitle("Graphsheets");
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		
+		frame.getContentPane().setBackground(Color.BLACK);
 		
 		ArrayList<Node> nodes = new ArrayList<Node>();
 		ArrayList<Edge> edges = new ArrayList<Edge>();
@@ -35,8 +37,8 @@ public class Main{
 		//make a grid of nodes
 		for (int i = 0; i < 100; i++) {
 			for (int j = 0; j < 100; j++) {
-				nodes.add(new Node((int) (i * 100), (int) (j * 100), (int) (100), (int) (100),
-						new Cell.Atomic.TextCell("A")));
+				nodes.add(new Node((int) (i * 105), (int) (j * 105), (int) (100), (int) (100),
+						new Cell.Atomic.TextCell(UUID.randomUUID().toString().substring(0, 5))));
 			}
 		}
 		

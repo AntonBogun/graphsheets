@@ -5,14 +5,12 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.NoninvertibleTransformException;
 
 import javax.swing.JComponent;
-import javax.swing.JTextArea;
 
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.ui.AbstractZoomableContainer;
+import fi.graphsheets.ui.IZoomableComponent;
 
 public class GraphLayout implements LayoutManager {
 	
@@ -49,20 +47,32 @@ public class GraphLayout implements LayoutManager {
         return null;
     }
     
+    private Rectangle previousBounds = new Rectangle();
     //FIXME GraphLayout layoutContainer
     @Override
     public void layoutContainer(Container parent) {
     	//get children
     	if(parent instanceof AbstractZoomableContainer container) {
+    		if(container.getZoomRegion() == previousBounds) return;
 	    	Component[] components = parent.getComponents();
 			for (Component component : components) {
 				if(component instanceof JComponent jcomponent && jcomponent.getClientProperty("node") instanceof Node node) {
 //					if(component.getBounds().isEmpty())
-						component.setBounds(node.getX(), node.getY(), node.getWidth(), node.getHeight());
-					
-					
-					component.setBounds(container.getZoomTransform().createTransformedShape(component.getBounds()).getBounds());
+					Rectangle defaultBounds = new Rectangle(node.getX(), node.getY(), node.getWidth(), node.getHeight());
+//					if (!defaultBounds.intersects(container.getZoomRegion())) {
+//						component.setVisible(false);
+//						continue;
+//					} else {
+//						component.setVisible(true);
+//					}
 
+
+					
+//					component.setVisible(defaultBounds.intersects(container.getZoomRegion()));
+					
+					
+					component.setBounds(container.getZoomTransform().createTransformedShape(defaultBounds).getBounds());
+					
 //					component.setBounds(
 //							(int)((component.getX() - container.getZoomRegion().getCenterX()) * (container.getWidth()/container.getZoomRegion().width)),
 //							(int)((node.getY() - container.getZoomRegion().getCenterY()) * (container.getHeight()/container.getZoomRegion().height))	,
@@ -70,15 +80,22 @@ public class GraphLayout implements LayoutManager {
 //							node.getHeight() * (container.getHeight()/container.getZoomRegion().height)
 //							);
 					
-					if(component instanceof JTextArea textArea) {
-						if(textArea.getFont().getSize()<12.0) {
-							//TODO make mipmap text component
+					if(component instanceof IZoomableComponent zcomponent) {
+						if(!zcomponent.isMipMapped()){
+							zcomponent.computeMipMap();
 						}
-						textArea.setFont(textArea.getFont().deriveFont(container.getScaleTransform()));
+//						if(textArea.getFont().getSize()<12.0) {
+//							////TO DO make mipmap text component
+//						}
+						//float fontSize = (float) (textArea.getFont().getSize() * (container.getScaleTransform().getScaleX()));
+						zcomponent.setZoomTransform(container.getZoomTransform());
+						
 					}
+					
 				}
 				
 			}
+	    	previousBounds = container.getZoomRegion();
     	}
     	
     }

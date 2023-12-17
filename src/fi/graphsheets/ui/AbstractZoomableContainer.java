@@ -1,14 +1,17 @@
 package fi.graphsheets.ui;
 
+import java.awt.Color;
 import java.awt.Container;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 
+import javax.swing.JComponent;
+
 @SuppressWarnings("serial")
-public abstract class AbstractZoomableContainer extends Container {
+public abstract class AbstractZoomableContainer extends JComponent {
 
 	private Rectangle zoomRegion;
 	private AffineTransform zoomTransform = AffineTransform.getScaleInstance(1, 1);;
@@ -23,6 +26,11 @@ public abstract class AbstractZoomableContainer extends Container {
 			zoomRegion = new Rectangle(this.getWidth(), this.getHeight());
 		}
 		return zoomRegion;
+	}
+	
+	@Override
+	public boolean isOptimizedDrawingEnabled() {
+		return true;
 	}
 	
 	public void zoomTo(Point origin, int depth) {
@@ -58,7 +66,11 @@ public abstract class AbstractZoomableContainer extends Container {
 			e.printStackTrace();
 		}
 		revalidate();
-		repaint();
+		Graphics2D g = (Graphics2D) getGraphics();
+		g.setColor(Color.black);
+		g.fillRect(0, 0, getWidth(), getHeight());
+		g.setColor(Color.black);
+		this.paint(g);
 	}
 	
 	public void zoomFrom(Point origin, int depth) {
@@ -94,7 +106,11 @@ public abstract class AbstractZoomableContainer extends Container {
 			e.printStackTrace();
 		}
 		revalidate();
-		repaint();
+		Graphics2D g = (Graphics2D) getGraphics();
+		g.setColor(Color.black);
+		g.fillRect(0, 0, getWidth(), getHeight());
+		g.setColor(Color.black);
+		this.paint(g);
 	}
 
 	public AffineTransform getZoomTransform() {

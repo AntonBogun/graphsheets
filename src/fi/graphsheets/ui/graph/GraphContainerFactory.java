@@ -1,11 +1,11 @@
 package fi.graphsheets.ui.graph;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.geom.AffineTransform;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLayer;
-import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
 import javax.swing.plaf.LayerUI;
 
@@ -14,6 +14,7 @@ import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.ZoomableContainerControlLayer;
+import fi.graphsheets.ui.atomic.GSTextArea;
 
 public class GraphContainerFactory {
 	
@@ -44,8 +45,8 @@ public class GraphContainerFactory {
 		private GraphContainer(Graph graph) {
 			this.graph = graph;
 			this.setLayout(new GraphLayout());
-			
 		}
+		
 		
 		public void initializeGraph() {
 			for (Node node : graph.getNodes()) {
@@ -58,7 +59,7 @@ public class GraphContainerFactory {
 					}
 					
 					case Cell.Atomic.TextCell text -> {
-						JTextArea textarea = new JTextArea();
+						GSTextArea textarea = new GSTextArea();
 						textarea.setText(text.value());
 						textarea.putClientProperty("node", node);
 						textarea.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
