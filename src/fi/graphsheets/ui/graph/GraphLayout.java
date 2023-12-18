@@ -81,9 +81,9 @@ public class GraphLayout implements LayoutManager {
 //							);
 					
 					if(component instanceof IZoomableComponent zcomponent) {
-						if(!zcomponent.isMipMapped()){
-							zcomponent.computeMipMap();
-						}
+//						if(!zcomponent.isMipMapped()){
+//							zcomponent.computeMipMap();
+//						}
 //						if(textArea.getFont().getSize()<12.0) {
 //							////TO DO make mipmap text component
 //						}
