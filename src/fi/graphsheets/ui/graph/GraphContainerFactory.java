@@ -60,13 +60,7 @@ public class GraphContainerFactory {
 			RepaintManager.setCurrentManager(new GSRepaintManager());
 			
 		}
-//		
-//		private JComponent getNodeComponentByID(int id) {
-//			List<Component> components = Arrays.stream(getComponents()).filter(component -> ((JComponent) component).getClientProperty("id").equals(id)).collect(Collectors.toList());
-//			return components.size() > 0 ? (JComponent) components.get(0) : null;
-//		}
-//		
-		
+
 		private void realiseGraphElementsInRenderRegion(Rectangle renderRegion) {
 			for (Component component : getComponents()) {
 				if (component instanceof JComponent jcomponent && jcomponent.getClientProperty("node") instanceof Node node) {

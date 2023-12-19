@@ -17,11 +17,6 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	private AffineTransform zoomTransform = AffineTransform.getScaleInstance(1, 1);
 	private AffineTransform scaleTransform = AffineTransform.getScaleInstance(1, 1);
 	
-//
-//	public void setZoomRegion(Rectangle zoomRegion) {
-//		this.zoomRegion = zoomRegion;
-//	}
-//	
 	public Rectangle getZoomRegion() {
 		if(zoomRegion == null) {
 			zoomRegion = new Rectangle(this.getWidth(), this.getHeight());
@@ -47,20 +42,6 @@ public abstract class AbstractZoomableContainer extends JComponent {
 		
 		AffineTransform transform = translate;
 		
-//		System.out.println("in");
-//		Shape bounds = getZoomRegion();
-//		System.out.println(bounds.getBounds());
-//		try {
-//			bounds = translate.createInverse().createTransformedShape(bounds);
-//			System.out.println(bounds.getBounds());
-//			bounds = scale.createInverse().createTransformedShape(bounds);
-//			System.out.println(bounds.getBounds());
-//			bounds = translate.createTransformedShape(bounds);
-//			System.out.println(bounds.getBounds());
-//		} catch (NoninvertibleTransformException e) {
-//			e.printStackTrace();
-//		}
-		
 		zoomTransform.concatenate(transform);
 		scaleTransform.concatenate(scale);
 		zoomRegion = transform.createInverse().createTransformedShape(getZoomRegion()).getBounds();
@@ -82,20 +63,6 @@ public abstract class AbstractZoomableContainer extends JComponent {
 		
 		AffineTransform transform = translate;
 		
-//		System.out.println("in");
-//		Shape bounds = getZoomRegion();
-//		System.out.println(bounds.getBounds());
-//		try {
-//			bounds = translate.createInverse().createTransformedShape(bounds);
-//			System.out.println(bounds.getBounds());
-//			bounds = scale.createInverse().createTransformedShape(bounds);
-//			System.out.println(bounds.getBounds());
-//			bounds = translate.createTransformedShape(bounds);
-//			System.out.println(bounds.getBounds());
-//		} catch (NoninvertibleTransformException e) {
-//			e.printStackTrace();
-//		}
-
 		zoomTransform.concatenate(transform);
 		scaleTransform.concatenate(scale);
 		zoomRegion = transform.createInverse().createTransformedShape(getZoomRegion()).getBounds();

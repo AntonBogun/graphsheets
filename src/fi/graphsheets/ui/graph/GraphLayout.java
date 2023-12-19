@@ -18,19 +18,6 @@ import fi.graphsheets.ui.IZoomableComponent;
 
 public class GraphLayout implements LayoutManager {
 	
-	
-//	/**
-//	 * Sets the bounding box that this layout for the view of this GraphLayout
-//	 * 
-//	 * @param height
-//	 */
-//	public void setViewBounds(int height, Point origin) {
-//		this.height = height;
-//		if(origin != null) {
-//			this.origin = origin;
-//		}
-//	}
-	
     @Override
     public void addLayoutComponent(String name, Component comp) {
     	
@@ -52,10 +39,8 @@ public class GraphLayout implements LayoutManager {
     }
     
     private Rectangle previousBounds = new Rectangle();
-    //FIXED FIX-ME GraphLayout layoutContainer
     @Override
     public void layoutContainer(Container parent) {
-    	//get children
     	if(parent instanceof AbstractZoomableContainer container) {
     		if(container.getZoomRegion() == previousBounds) return;
     		((GSRepaintManager)RepaintManager.currentManager(container)).setPainting(false);
@@ -63,33 +48,12 @@ public class GraphLayout implements LayoutManager {
 	    	Component[] components = parent.getComponents();
 			for (Component component : components) {
 				if(component instanceof JComponent jcomponent && jcomponent.getClientProperty("node") instanceof Node node) {
-//					if(component.getBounds().isEmpty())
-					Rectangle defaultBounds = new Rectangle(node.getX(), node.getY(), node.getWidth(), node.getHeight());
-//					if (!defaultBounds.intersects(container.getZoomRegion())) {
-//						component.setVisible(false);
-//						continue;
-//					} else {
-//						component.setVisible(true);
-//					}
-
-
 					
-//					component.setVisible(defaultBounds.intersects(container.getZoomRegion()));
+					Rectangle defaultBounds = new Rectangle(node.getX(), node.getY(), node.getWidth(), node.getHeight());
 					component.setBounds(container.getZoomTransform().createTransformedShape(defaultBounds).getBounds());
-//					component.setBounds(
-//							(int)((component.getX() - container.getZoomRegion().getCenterX()) * (container.getWidth()/container.getZoomRegion().width)),
-//							(int)((node.getY() - container.getZoomRegion().getCenterY()) * (container.getHeight()/container.getZoomRegion().height))	,
-//							node.getWidth() * (container.getWidth()/container.getZoomRegion().width),
-//							node.getHeight() * (container.getHeight()/container.getZoomRegion().height)
-//							);
+					
 					if(jcomponent.getClientProperty("controller") instanceof IZoomableComponent zcomponent) {
-//						if(!zcomponent.isMipMapped()){
-//							zcomponent.computeMipMap();
-//						}
-//						if(textArea.getFont().getSize()<12.0) {
-//							////TO DO make mipmap text component
-//						}
-						//float fontSize = (float) (textArea.getFont().getSize() * (container.getScaleTransform().getScaleX()));
+						
 						zcomponent.setZoomTransform(container.getZoomTransform());
 						
 					}

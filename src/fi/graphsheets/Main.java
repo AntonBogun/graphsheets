@@ -30,13 +30,11 @@ public class Main{
 		ArrayList<Node> nodes = new ArrayList<Node>();
 		ArrayList<Edge> edges = new ArrayList<Edge>();
 		
-		//make spiral of nodes which get proportionally smaller and smaller. make sure the coordinates are ints
 //		for (int i = 0; i < 1000; i++) {
 //			nodes.add(new Node((int) (Math.cos(i / 10.0) * i * 10.0), (int) (Math.sin(i / 10.0) * i * 10.0),
 //					(int) (100 - i), (int) (100 - i), new Cell.Atomic.TextCell("A")));
 //		}
-//		
-		//make a grid of nodes
+
 		for (int i = 0; i < 1000; i++) {
 			for (int j = 0; j < 1000; j++) {
 				nodes.add(new Node((int) (i * 105), (int) (j * 105), (int) (100), (int) (100),
@@ -44,7 +42,6 @@ public class Main{
 			}
 		}
 		
-//		nodes.add(new Node((int)0, (int)0, (int)100, (int)100, new Cell.Atomic.TextCell("A")));
 		Graph graph = new Graph(nodes, edges);
 		
 		JLayer<? extends AbstractZoomableContainer> layer = GraphContainerFactory.createZoomableGraphContainer(graph);
@@ -52,7 +49,6 @@ public class Main{
 		frame.add(layer);
 		frame.setSize(1000, 1000);
 		frame.setVisible(true);
-//		frame.createBufferStrategy(2);
 		SwingUtilities.invokeLater(() -> {
 			RepaintManager.setCurrentManager(new GSRepaintManager());
 		});
