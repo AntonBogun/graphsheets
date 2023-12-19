@@ -1,27 +1,44 @@
 package fi.graphsheets.ui.atomic;
 
+import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
 
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.border.BevelBorder;
 
+import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.ui.IZoomableComponent;
 
 @SuppressWarnings("serial")
-public class GSTextArea extends JTextArea implements IZoomableComponent {
+public class GSTextArea implements IZoomableComponent {
 	
-	private BufferedImage image;
+//	private BufferedImage image;
 	private double font = 12;
 	private double defaultFont = 12;
-	private boolean isMipMapPaint = false;
+	private JTextArea textarea;
+//	private boolean isMipMapPaint = false;
+//	private Color backgroundColor;
 	
 	public GSTextArea() {
-		super();
+		this.textarea = new JTextArea() {
+			@Override
+            public void paint(Graphics g) {
+                if(font <= 2.0) {
+                    g.setColor(getBackground());
+                    g.fillRect(0, 0, 100, 100);
+                    g.setColor(Color.BLACK);
+                } else {
+                    super.paint(g);
+                }
+            }
+        };
+		
+
+		this.textarea.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
 //		this.getDocument().addDocumentListener(new DocumentListener() {
 //
 //			private Thread userInputDaemon;
@@ -61,6 +78,11 @@ public class GSTextArea extends JTextArea implements IZoomableComponent {
 //		});
 	}
 	
+	public JTextArea getTextArea() {
+		return this.textarea;
+	}
+	
+	
 //	public void computeMipMap() {
 //		double scale = 12.0/font;
 //		int width = (int)(getWidth()*scale);
@@ -83,9 +105,9 @@ public class GSTextArea extends JTextArea implements IZoomableComponent {
 //        return image != null;
 //    }
 //	
-	@Override
-	public void paint(Graphics g) {
-//		if(font<12 && !isMipMapPaint) {
+//	@Override
+//	public void paint(Graphics g) {
+////		if(font<12 && !isMipMapPaint) {
 //			if (image != null) {
 //				g.drawImage(image, 0, 0, null);
 //			} else {
@@ -94,17 +116,56 @@ public class GSTextArea extends JTextArea implements IZoomableComponent {
 ////			g.clipRect(0, 0, 50, 50);
 ////			g.fillRect(0, 0, 50, 50);
 //			g.dispose();
-//		} else {
-            super.paint(g);
-//        }
-	}
+//		if(this.getParent() instanceof AbstractZoomableContainer parent) {
+//			if(parent.isPaintingStopped()) {
+//				System.out.println("caught");
+//				
+//				return;
+////				FIXED FIX-ME clear the repaint queue. Actually, make custom RepaintManager!!!
+//			}
+//		}
+
 
 	@Override
 	public void setZoomTransform(AffineTransform zoomTransform) {
 		font = defaultFont*zoomTransform.getScaleX();
-		if(font < 2.0) return;
+		if(font < 2.0) {
+			this.textarea.setBorder(null);
+			return;
+		}
 		
-		setFont(getFont().deriveFont((float) font));
+		if(this.textarea.getBorder()==null) {
+			this.textarea.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+		}
+		
+		textarea.setFont(textarea.getFont().deriveFont((float) font));
+	}
+
+	@Override
+	public boolean isMipMapRequired(AffineTransform zoomTransform) {
+		return font < 2.0 || defaultFont*zoomTransform.getScaleX() < 2.0;
 	}
 	
+	//XXX add font properties to nodes, this function only works if all the nodes are the same
+	public static boolean _TEMPisMipMapRequired(AffineTransform zoomTransform) {
+		return 12*zoomTransform.getScaleX() < 2.0;
+	}
+
+	@Override
+	public JComponent getMipMapComponent(Node node) {
+		JComponent mipMap = new JComponent() {
+			@Override
+            public void paint(Graphics g) {
+                g.setColor(Color.WHITE);
+                g.fillRect(0, 0, 100, 100);
+                g.setColor(Color.BLACK);
+            }
+        };
+
+        mipMap.putClientProperty("node", node);
+        mipMap.putClientProperty("controller", this);
+        mipMap.putClientProperty("mipmap", true);
+        
+        return mipMap;
+	}
 }

@@ -7,9 +7,13 @@ import java.awt.LayoutManager;
 import java.awt.Rectangle;
 
 import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.RepaintManager;
+import javax.swing.SwingUtilities;
 
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.ui.AbstractZoomableContainer;
+import fi.graphsheets.ui.GSRepaintManager;
 import fi.graphsheets.ui.IZoomableComponent;
 
 public class GraphLayout implements LayoutManager {
@@ -48,12 +52,14 @@ public class GraphLayout implements LayoutManager {
     }
     
     private Rectangle previousBounds = new Rectangle();
-    //FIXME GraphLayout layoutContainer
+    //FIXED FIX-ME GraphLayout layoutContainer
     @Override
     public void layoutContainer(Container parent) {
     	//get children
     	if(parent instanceof AbstractZoomableContainer container) {
     		if(container.getZoomRegion() == previousBounds) return;
+    		((GSRepaintManager)RepaintManager.currentManager(container)).setPainting(false);
+    		GraphContainerFactory.realiseGraphElementsInRenderRegion(parent, container.getZoomRegion());
 	    	Component[] components = parent.getComponents();
 			for (Component component : components) {
 				if(component instanceof JComponent jcomponent && jcomponent.getClientProperty("node") instanceof Node node) {
@@ -69,18 +75,14 @@ public class GraphLayout implements LayoutManager {
 
 					
 //					component.setVisible(defaultBounds.intersects(container.getZoomRegion()));
-					
-					
 					component.setBounds(container.getZoomTransform().createTransformedShape(defaultBounds).getBounds());
-					
 //					component.setBounds(
 //							(int)((component.getX() - container.getZoomRegion().getCenterX()) * (container.getWidth()/container.getZoomRegion().width)),
 //							(int)((node.getY() - container.getZoomRegion().getCenterY()) * (container.getHeight()/container.getZoomRegion().height))	,
 //							node.getWidth() * (container.getWidth()/container.getZoomRegion().width),
 //							node.getHeight() * (container.getHeight()/container.getZoomRegion().height)
 //							);
-					
-					if(component instanceof IZoomableComponent zcomponent) {
+					if(jcomponent.getClientProperty("controller") instanceof IZoomableComponent zcomponent) {
 //						if(!zcomponent.isMipMapped()){
 //							zcomponent.computeMipMap();
 //						}
@@ -95,6 +97,11 @@ public class GraphLayout implements LayoutManager {
 				}
 				
 			}
+    		((GSRepaintManager)RepaintManager.currentManager(container)).setPainting(true);
+			SwingUtilities.invokeLater(() -> {
+				((GSRepaintManager) RepaintManager.currentManager(container)).markCompletelyDirty(container);
+				((GSRepaintManager) RepaintManager.currentManager(container)).paintDirtyRegions();
+			});
 	    	previousBounds = container.getZoomRegion();
     	}
     	

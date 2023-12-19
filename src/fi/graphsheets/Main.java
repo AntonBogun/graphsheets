@@ -2,10 +2,11 @@ package fi.graphsheets;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.UUID;
 
 import javax.swing.JFrame;
 import javax.swing.JLayer;
+import javax.swing.RepaintManager;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import fi.graphsheets.graphelements.Cell;
@@ -13,6 +14,7 @@ import fi.graphsheets.graphelements.Edge;
 import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.ui.AbstractZoomableContainer;
+import fi.graphsheets.ui.GSRepaintManager;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
 
 
@@ -35,10 +37,10 @@ public class Main{
 //		}
 //		
 		//make a grid of nodes
-		for (int i = 0; i < 100; i++) {
-			for (int j = 0; j < 100; j++) {
+		for (int i = 0; i < 1000; i++) {
+			for (int j = 0; j < 1000; j++) {
 				nodes.add(new Node((int) (i * 105), (int) (j * 105), (int) (100), (int) (100),
-						new Cell.Atomic.TextCell(UUID.randomUUID().toString().substring(0, 5))));
+						i+10000*j, new Cell.Atomic.TextCell(i+10*j+"")));
 			}
 		}
 		
@@ -50,6 +52,11 @@ public class Main{
 		frame.add(layer);
 		frame.setSize(1000, 1000);
 		frame.setVisible(true);
+//		frame.createBufferStrategy(2);
+		SwingUtilities.invokeLater(() -> {
+			RepaintManager.setCurrentManager(new GSRepaintManager());
+		});
+		
 	}
 	
 

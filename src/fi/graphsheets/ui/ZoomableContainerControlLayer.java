@@ -41,7 +41,7 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 			
 			l.getView().zoomTo(origin, -e.getWheelRotation()*2);
 		}
-		
+		l.requestFocus();
 		e.consume();
 	}
 	
@@ -54,6 +54,7 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 		} else if (e.getKeyCode() == 109) {
 			l.getView().zoomTo(new Point(l.getWidth() / 2, l.getHeight() / 2), 2);
 		}
+		l.requestFocus();
 	}
 	
 	

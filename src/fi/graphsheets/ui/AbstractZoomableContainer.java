@@ -14,8 +14,9 @@ import javax.swing.JComponent;
 public abstract class AbstractZoomableContainer extends JComponent {
 
 	private Rectangle zoomRegion;
-	private AffineTransform zoomTransform = AffineTransform.getScaleInstance(1, 1);;
-	private AffineTransform scaleTransform = AffineTransform.getScaleInstance(1, 1);;
+	private AffineTransform zoomTransform = AffineTransform.getScaleInstance(1, 1);
+	private AffineTransform scaleTransform = AffineTransform.getScaleInstance(1, 1);
+	
 //
 //	public void setZoomRegion(Rectangle zoomRegion) {
 //		this.zoomRegion = zoomRegion;
@@ -33,6 +34,7 @@ public abstract class AbstractZoomableContainer extends JComponent {
 		return true;
 	}
 	
+
 	public void zoomTo(Point origin, int depth) {
 		try {
 		zoomTransform.createInverse().transform(origin, origin);
@@ -66,11 +68,6 @@ public abstract class AbstractZoomableContainer extends JComponent {
 			e.printStackTrace();
 		}
 		revalidate();
-		Graphics2D g = (Graphics2D) getGraphics();
-		g.setColor(Color.black);
-		g.fillRect(0, 0, getWidth(), getHeight());
-		g.setColor(Color.black);
-		this.paint(g);
 	}
 	
 	public void zoomFrom(Point origin, int depth) {
@@ -106,11 +103,6 @@ public abstract class AbstractZoomableContainer extends JComponent {
 			e.printStackTrace();
 		}
 		revalidate();
-		Graphics2D g = (Graphics2D) getGraphics();
-		g.setColor(Color.black);
-		g.fillRect(0, 0, getWidth(), getHeight());
-		g.setColor(Color.black);
-		this.paint(g);
 	}
 
 	public AffineTransform getZoomTransform() {
