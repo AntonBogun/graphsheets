@@ -11,9 +11,6 @@ public interface IZoomableComponent {
 		
 	public void setZoomTransform(AffineTransform zoomTransform);
 	
-	public JComponent getMipMapComponent(Node node);
-
-	public boolean isMipMapRequired(AffineTransform zoomTransform);
 
 	
 }

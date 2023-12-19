@@ -35,8 +35,8 @@ public class Main{
 //					(int) (100 - i), (int) (100 - i), new Cell.Atomic.TextCell("A")));
 //		}
 
-		for (int i = 0; i < 1000; i++) {
-			for (int j = 0; j < 1000; j++) {
+		for (int i = 0; i < 100; i++) {
+			for (int j = 0; j < 100; j++) {
 				nodes.add(new Node((int) (i * 105), (int) (j * 105), (int) (100), (int) (100),
 						i+10000*j, new Cell.Atomic.TextCell(i+10*j+"")));
 			}

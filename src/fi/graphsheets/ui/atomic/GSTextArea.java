@@ -5,12 +5,9 @@ import java.awt.Graphics;
 import java.awt.geom.AffineTransform;
 
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
 
-import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.ui.IZoomableComponent;
 
 @SuppressWarnings("serial")
@@ -43,6 +40,8 @@ public class GSTextArea implements IZoomableComponent {
 		return this.textarea;
 	}
 	
+
+	
 	@Override
 	public void setZoomTransform(AffineTransform zoomTransform) {
 		font = defaultFont*zoomTransform.getScaleX();
@@ -58,31 +57,4 @@ public class GSTextArea implements IZoomableComponent {
 		textarea.setFont(textarea.getFont().deriveFont((float) font));
 	}
 
-	@Override
-	public boolean isMipMapRequired(AffineTransform zoomTransform) {
-		return font < 2.0 || defaultFont*zoomTransform.getScaleX() < 2.0;
-	}
-	
-	//XXX add font properties to nodes, this function only works if all the nodes are the same
-	public static boolean _TEMPisMipMapRequired(AffineTransform zoomTransform) {
-		return 12*zoomTransform.getScaleX() < 2.0;
-	}
-
-	@Override
-	public JComponent getMipMapComponent(Node node) {
-		JComponent mipMap = new JComponent() {
-			@Override
-            public void paint(Graphics g) {
-                g.setColor(Color.WHITE);
-                g.fillRect(0, 0, 100, 100);
-                g.setColor(Color.BLACK);
-            }
-        };
-
-        mipMap.putClientProperty("node", node);
-        mipMap.putClientProperty("controller", this);
-        mipMap.putClientProperty("mipmap", true);
-        
-        return mipMap;
-	}
 }

@@ -44,7 +44,7 @@ public class GraphLayout implements LayoutManager {
     	if(parent instanceof AbstractZoomableContainer container) {
     		if(container.getZoomRegion() == previousBounds) return;
     		((GSRepaintManager)RepaintManager.currentManager(container)).setPainting(false);
-    		GraphContainerFactory.realiseGraphElementsInRenderRegion(parent, container.getZoomRegion());
+//    		GraphContainerFactory.realiseGraphElementsInRenderRegion(parent, container.getZoomRegion());
 	    	Component[] components = parent.getComponents();
 			for (Component component : components) {
 				if(component instanceof JComponent jcomponent && jcomponent.getClientProperty("node") instanceof Node node) {
