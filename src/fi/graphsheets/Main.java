@@ -71,7 +71,12 @@ public class Main{
 		ArrayList<Node> nodes1 = new ArrayList<Node>();
 		ArrayList<Edge> edges1 = new ArrayList<Edge>();
 		
-		nodes1.add(new Node(0,0,1000,1000,0, new Cell.SheetCell(new Sheet(cells, 3, 3))));
+		nodes1.add(new Node(0,0,500,500,0, new Cell.SheetCell(new Sheet(cells, 3, 3))));
+		
+		for (int i = 20; i < 10020; i++) {
+			nodes1.add(new Node((int) (Math.cos(i / 10.0) * i * 100.0), (int) (Math.sin(i / 10.0) * i * 100.0),
+					(int) (100), (int) (100), i, new Cell.Atomic.TextCell("A")));
+		}
 		
 		Graph graph1 = new Graph(nodes1, edges1);
 		
