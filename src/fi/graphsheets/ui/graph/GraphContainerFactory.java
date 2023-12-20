@@ -12,6 +12,7 @@ import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSRepaintManager;
 import fi.graphsheets.ui.ZoomableContainerControlLayer;
 import fi.graphsheets.ui.atomic.GSTextArea;
+import fi.graphsheets.ui.sheet.SheetContainerFactory;
 
 public class GraphContainerFactory {
 	
@@ -65,7 +66,10 @@ public class GraphContainerFactory {
 					}
 					
 					case Cell.SheetCell(Sheet sheet) -> {
-//						table.setDefaultRenderer(Cell.GraphCell.class, new GraphCellRenderer());
+						System.out.println("hahahahahahahhaahdjkashdasjkdhasjkhd");
+						JLayer<? extends AbstractZoomableContainer> sheetContainer = SheetContainerFactory.createZoomableSheetContainer(sheet);
+						sheetContainer.putClientProperty("node", node);
+						add(sheetContainer);
 					}
 					
 					default -> throw new IllegalArgumentException("Unexpected value: " + node.getCell());

@@ -6,9 +6,12 @@ import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
 
+import javax.swing.JComponent;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
+import fi.graphsheets.graphelements.Cell;
+import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet;
 import fi.graphsheets.graphelements.Sheet.SheetEntry;
 import fi.graphsheets.ui.AbstractZoomableContainer;
@@ -17,6 +20,7 @@ import fi.graphsheets.ui.IZoomableComponent;
 
 public class SheetLayout implements LayoutManager {
 
+	
 	@Override
 	public void addLayoutComponent(String name, Component comp) {
 
@@ -38,14 +42,16 @@ public class SheetLayout implements LayoutManager {
 	}
 	
     private Rectangle previousBounds = new Rectangle();
-    private Sheet layoutInfo;
 	@Override
 	public void layoutContainer(Container parent) {
     	if(parent instanceof AbstractZoomableContainer container) {
     		if(container.getZoomRegion() == previousBounds) return;
     		((GSRepaintManager)RepaintManager.currentManager(container)).setPainting(false);
-			    for(SheetEntry entry : container.) {
-		    		Rectangle defaultBounds = new Rectangle(node.getX(), node.getY(), node.getWidth(), node.getHeight());
+    		Component[] components = parent.getComponents();
+			for (Component component : components) {
+				if(component instanceof JComponent jcomponent && jcomponent.getClientProperty("entry") instanceof SheetEntry entry) {
+					
+					Rectangle defaultBounds = new Rectangle(entry.x() * 100, entry.y() * 100, 100, 100);
 					component.setBounds(container.getZoomTransform().createTransformedShape(defaultBounds).getBounds());
 					
 					if(jcomponent instanceof IZoomableComponent zcomponent) {
@@ -53,7 +59,10 @@ public class SheetLayout implements LayoutManager {
 						zcomponent.setZoomTransform(container.getZoomTransform());
 						
 					}
-			    }
+					
+				}
+				
+			}
     		((GSRepaintManager)RepaintManager.currentManager(container)).setPainting(true);
 			SwingUtilities.invokeLater(() -> {
 				((GSRepaintManager) RepaintManager.currentManager(container)).markCompletelyDirty(container);

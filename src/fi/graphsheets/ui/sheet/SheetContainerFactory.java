@@ -54,14 +54,14 @@ public class SheetContainerFactory {
 					
 					case Cell.GraphCell(Graph graph) -> {
 						JLayer<? extends AbstractZoomableContainer> graphContainer = GraphContainerFactory.createZoomableGraphContainer(graph);
-//						graphContainer.putClientProperty("node", entry.cell());
+						graphContainer.putClientProperty("entry", entry);
 						add(graphContainer);
 					}
 					
 					case Cell.Atomic.TextCell(String text) -> {
 						GSTextArea textarea = new GSTextArea();
 						textarea.setText(text);
-//						textarea.putClientProperty("node", entry.cell());
+						textarea.putClientProperty("entry", entry);
 						add(textarea);
 					}
 					

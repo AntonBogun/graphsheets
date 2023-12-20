@@ -35,17 +35,18 @@ public class Sheet implements Iterable<Sheet.SheetEntry>{
 			
 			@Override
 			public boolean hasNext() {
-				return curX + width*curY < cells.size() - 1;
+				return curX + width*curY < cells.size();
 			}
 
 			@Override
 			public SheetEntry next() {
+				SheetEntry entry = new SheetEntry(curX, curY, get(curX, curY));
 				curX++;
 				if(curX > width - 1) {
 					curX %= width;
 					curY++;
 				}
-				return new SheetEntry(curX, curY, get(curX, curY));
+				return entry;
 			}
 			
 		};
