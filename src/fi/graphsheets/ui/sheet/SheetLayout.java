@@ -36,7 +36,7 @@ public class SheetLayout implements LayoutManager {
 	public Dimension minimumLayoutSize(Container parent) {
 		return null;
 	}
-	 
+	
     private Rectangle previousBounds = new Rectangle();
     private Sheet layoutInfo;
 	@Override
