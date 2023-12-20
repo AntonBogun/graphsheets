@@ -10,6 +10,6 @@ public sealed interface Cell {
 	
 	public record GraphCell(Graph graph) implements Cell {}
 	
-//	public record SheetCell(Sheet sheet) implements Cell {}
+	public record SheetCell(Sheet sheet) implements Cell {}
 }
 

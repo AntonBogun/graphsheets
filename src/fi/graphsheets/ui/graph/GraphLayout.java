@@ -52,7 +52,7 @@ public class GraphLayout implements LayoutManager {
 					Rectangle defaultBounds = new Rectangle(node.getX(), node.getY(), node.getWidth(), node.getHeight());
 					component.setBounds(container.getZoomTransform().createTransformedShape(defaultBounds).getBounds());
 					
-					if(jcomponent.getClientProperty("controller") instanceof IZoomableComponent zcomponent) {
+					if(jcomponent instanceof IZoomableComponent zcomponent) {
 						
 						zcomponent.setZoomTransform(container.getZoomTransform());
 						

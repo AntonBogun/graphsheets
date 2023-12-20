@@ -11,50 +11,44 @@ import javax.swing.border.BevelBorder;
 import fi.graphsheets.ui.IZoomableComponent;
 
 @SuppressWarnings("serial")
-public class GSTextArea implements IZoomableComponent {
+public class GSTextArea extends JTextArea implements IZoomableComponent {
 
 	private double font = 12;
 	private double defaultFont = 12;
-	private JTextArea textarea;
 //	private Color backgroundColor;
 	
 	public GSTextArea() {
-		this.textarea = new JTextArea() {
-			@Override
-            public void paint(Graphics g) {
-                if(font <= 2.0) {
-                    g.setColor(getBackground());
-                    g.fillRect(0, 0, 100, 100);
-                    g.setColor(Color.BLACK);
-                } else {
-                    super.paint(g);
-                }
-            }
-        };
-		
-
-		this.textarea.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+		super();
+		this.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+		this.setLineWrap(true);
 	}
 	
-	public JTextArea getTextArea() {
-		return this.textarea;
-	}
+	@Override
+    public void paint(Graphics g) {
+        if(font < 1.0) {
+            g.setColor(getBackground());
+            g.fillRect(0, 0, 100, 100);
+            g.setColor(Color.BLACK);
+        } else {
+            super.paint(g);
+        }
+    }
 	
 
 	
 	@Override
 	public void setZoomTransform(AffineTransform zoomTransform) {
 		font = defaultFont*zoomTransform.getScaleX();
-		if(font < 2.0) {
-			this.textarea.setBorder(null);
+		if(font < 1.0) {
+			this.setBorder(null);
 			return;
 		}
 		
-		if(this.textarea.getBorder()==null) {
-			this.textarea.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+		if(this.getBorder()==null) {
+			this.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
 		}
 		
-		textarea.setFont(textarea.getFont().deriveFont((float) font));
+		setFont(getFont().deriveFont((float) font));
 	}
 
 }

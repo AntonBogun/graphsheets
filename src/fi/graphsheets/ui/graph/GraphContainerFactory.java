@@ -1,24 +1,24 @@
 package fi.graphsheets.ui.graph;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Rectangle;
-import java.util.HashMap;
+import java.util.UUID;
+import java.util.stream.Stream;
 
-import javax.swing.JComponent;
 import javax.swing.JLayer;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.JTable;
 import javax.swing.RepaintManager;
 import javax.swing.plaf.LayerUI;
+import javax.swing.table.TableCellRenderer;
 
 import fi.graphsheets.graphelements.Cell;
 import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
+import fi.graphsheets.graphelements.Sheet;
 import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSRepaintManager;
 import fi.graphsheets.ui.ZoomableContainerControlLayer;
 import fi.graphsheets.ui.atomic.GSTextArea;
+import fi.graphsheets.ui.sheet.GraphCellRenderer;
+import fi.graphsheets.ui.sheet.TextCellRenderer;
 
 public class GraphContainerFactory {
 	
@@ -58,28 +58,55 @@ public class GraphContainerFactory {
 			for (Node node : graph.getNodes()) {
 				switch (node.getCell()) {
 					
-					case Cell.GraphCell graphCell -> {
-						JLayer<? extends AbstractZoomableContainer> graphContainer = GraphContainerFactory.createZoomableGraphContainer(graphCell.graph());
+					case Cell.GraphCell(Graph graph) -> {
+						JLayer<? extends AbstractZoomableContainer> graphContainer = GraphContainerFactory.createZoomableGraphContainer(graph);
 						graphContainer.putClientProperty("node", node);
 						add(graphContainer);
 					}
 					
-					case Cell.Atomic.TextCell text -> {
-						GSTextArea gst = new GSTextArea();
-						JTextArea textarea = gst.getTextArea();
-						textarea.setText(text.value());
+					case Cell.Atomic.TextCell(String text) -> {
+						GSTextArea textarea = new GSTextArea();
+						textarea.setText(text);
 						textarea.putClientProperty("node", node);
-						textarea.putClientProperty("mipmap", false);
-						textarea.putClientProperty("controller", gst);
 						add(textarea);
-						}
-//					}
+					}
+					
+					case Cell.SheetCell(Sheet sheet) -> {
+						String[] names = Stream.generate(() -> {return UUID.randomUUID().toString();}).limit(sheet.getCells().length).toArray(String[]::new);
+						JTable table = new JTable(sheet.getCells(), names) {
+							private GraphCellRenderer gRender = new GraphCellRenderer();
+							private TextCellRenderer tRender = new TextCellRenderer();
+							@Override
+				            public TableCellRenderer getCellRenderer(int row, int column) {
+								switch (getValueAt(row, column)) {
+					                case Cell.SheetCell(Sheet sheet) -> {
+//					                    sheet renderer
+					                	return  super.getCellRenderer(row, column);
+					                }
+					                
+					                case Cell.GraphCell(Graph graph) -> {
+					                	return gRender;
+					                }
+					                
+					                case Cell.Atomic.TextCell(String text) -> {
+					                	return tRender;
+					                }
+					                
+					                default -> super.getCellRenderer(row, column);
+				                };
+								return super.getCellRenderer(row, column);
+				            }
+						};
+						table.putClientProperty("node", node);
+						add(table);
+//						table.setDefaultRenderer(Cell.GraphCell.class, new GraphCellRenderer());
+					}
 					
 					default -> throw new IllegalArgumentException("Unexpected value: " + node.getCell());
 					
 				
+				}
 			}
-		}
 		}
 
 	}
