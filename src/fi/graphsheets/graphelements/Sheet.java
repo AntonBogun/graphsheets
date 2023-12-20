@@ -1,18 +1,55 @@
 package fi.graphsheets.graphelements;
 
-public class Sheet {
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+public class Sheet implements Iterable<Sheet.SheetEntry>{
+
+	public static record SheetEntry(int x, int y, Cell cell) {}
 	
-	private Cell[][] cells;
-	public Sheet(Cell[][] cells) {
+	private List<Cell> cells = new ArrayList<Cell>();
+	private int width;
+	private int height;
+	public Sheet(List<Cell> cells, int width, int height) {
 		this.cells = cells;
+		this.width = width;
+		this.height = height;
 	}
 	
 	public Sheet() {
-		this.cells = new Cell[1][1];
+		this.width = 1;
+		this.height = 1;
 	}
 	
-	public Cell[][] getCells() {
-		return cells;
+	public Cell get(int i, int j) {
+		return cells.get(i+width*j);
 	}
+	
+
+	@Override
+	public Iterator<SheetEntry> iterator() {
+		return new Iterator<SheetEntry>() {
+			private int curX = 0;
+			private int curY = 0;
+			
+			@Override
+			public boolean hasNext() {
+				return curX + width*curY < cells.size() - 1;
+			}
+
+			@Override
+			public SheetEntry next() {
+				curX++;
+				if(curX > width - 1) {
+					curX %= width;
+					curY++;
+				}
+				return new SheetEntry(curX, curY, get(curX, curY));
+			}
+			
+		};
+	};
+	
 
 }

@@ -58,31 +58,31 @@ public class Main{
 		Graph graph = new Graph(nodes, edges);
 		
 		
-		Cell[][] cells = new Cell[2][2];
-		
-		cells[0][0] = (Cell) new Cell.GraphCell(graph);
-
-//		cells[0][0] = new Cell.Atomic.TextCell("A");
-		cells[0][1] = new Cell.Atomic.TextCell("B");
-		cells[1][0] = new Cell.Atomic.TextCell("C");
-		cells[1][1] = new Cell.Atomic.TextCell("D");
-		
-		Sheet sheet1 = new Sheet(cells);
+//		Cell[][] cells = new Cell[2][2];
+//		
+//		cells[0][0] = (Cell) new Cell.GraphCell(graph);
+//
+////		cells[0][0] = new Cell.Atomic.TextCell("A");
+//		cells[0][1] = new Cell.Atomic.TextCell("B");
+//		cells[1][0] = new Cell.Atomic.TextCell("C");
+//		cells[1][1] = new Cell.Atomic.TextCell("D");
+//		
+//		Sheet sheet1 = new Sheet(cells);
 //		
 //
-		Node node = new Node(0, 0, 100, 100, 1, new Cell.SheetCell(sheet1));
-		ArrayList<Node> nodes1 = new ArrayList<Node>();
-		ArrayList<Edge> edges1 = new ArrayList<Edge>();
-		nodes1.add(node);
+//		Node node = new Node(0, 0, 100, 100, 1, new Cell.SheetCell(sheet1));
+//		ArrayList<Node> nodes1 = new ArrayList<Node>();
+//		ArrayList<Edge> edges1 = new ArrayList<Edge>();
+//		nodes1.add(node);
 //		
-		Graph graph1 = new Graph(nodes1, edges1);
+//		Graph graph1 = new Graph(nodes1, edges1);
 //		
-		JLayer<? extends AbstractZoomableContainer> layer = GraphContainerFactory.createZoomableGraphContainer(graph1);
+//		JLayer<? extends AbstractZoomableContainer> layer = GraphContainerFactory.createZoomableGraphContainer(graph1);
 //		
 //		String[] names = Stream.generate(() -> {return UUID.randomUUID().toString();}).limit(sheet1.getCells().length).toArray(String[]::new);
 		
 //		JTable table = new JTable(sheet1.getCells(), names);
-		frame.add(layer);
+//		frame.add(layer);
 		frame.setSize(1000, 1000);
 		frame.setVisible(true);
 		SwingUtilities.invokeLater(() -> {
