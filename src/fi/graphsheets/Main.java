@@ -50,7 +50,7 @@ public class Main{
 		//Nodes in a galaxy formation
 		for (int i = 0; i < 1000; i++) {
 			nodes.add(new Node((int) (Math.cos(i / 10.0) * i * 100.0), (int) (Math.sin(i / 10.0) * i * 100.0),
-					(int) (100), (int) (100), i, new Cell.Atomic.TextCell("A")));
+					(int) (100), (int) (100), i, new Cell.Atomic.TextCell("ab")));
 		}
 
 		Graph graph = new Graph(nodes, edges);
@@ -71,7 +71,7 @@ public class Main{
 		ArrayList<Node> nodes1 = new ArrayList<Node>();
 		ArrayList<Edge> edges1 = new ArrayList<Edge>();
 		
-		nodes1.add(new Node(0,0,500,500,0, new Cell.SheetCell(new Sheet(cells, 3, 3))));
+		nodes1.add(new Node(0,0,300,300,0, new Cell.SheetCell(new Sheet(cells, 3, 3))));
 		
 		for (int i = 20; i < 10020; i++) {
 			nodes1.add(new Node((int) (Math.cos(i / 10.0) * i * 100.0), (int) (Math.sin(i / 10.0) * i * 100.0),

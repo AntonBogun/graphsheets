@@ -5,14 +5,14 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 
 import javax.swing.JComponent;
+import javax.swing.JLayer;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
-import fi.graphsheets.graphelements.Cell;
-import fi.graphsheets.graphelements.Node;
-import fi.graphsheets.graphelements.Sheet;
 import fi.graphsheets.graphelements.Sheet.SheetEntry;
 import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSRepaintManager;
@@ -41,6 +41,7 @@ public class SheetLayout implements LayoutManager {
 		return null;
 	}
 	
+	//this is almost identical to GraphLayout, but scared merging them this early on will cause headaches later
     private Rectangle previousBounds = new Rectangle();
 	@Override
 	public void layoutContainer(Container parent) {
@@ -54,9 +55,13 @@ public class SheetLayout implements LayoutManager {
 					Rectangle defaultBounds = new Rectangle(entry.x() * 100, entry.y() * 100, 100, 100);
 					component.setBounds(container.getZoomTransform().createTransformedShape(defaultBounds).getBounds());
 					
+					
 					if(jcomponent instanceof IZoomableComponent zcomponent) {
-						
 						zcomponent.setZoomTransform(container.getZoomTransform());
+					} else if(jcomponent instanceof JLayer jlayer && jlayer.getView() instanceof AbstractZoomableContainer subcontainer) {
+//						System.out.println(subcontainer.getClass());
+//						System.out.println(container.getScaleTransform());AffineTransform trans = container.getScaleTransform();
+						subcontainer.setZoomTransform(container.getScaleTransform());
 						
 					}
 					

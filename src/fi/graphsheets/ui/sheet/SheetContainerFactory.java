@@ -1,5 +1,8 @@
 package fi.graphsheets.ui.sheet;
 
+import java.awt.Component;
+import java.awt.geom.AffineTransform;
+
 import javax.swing.JLayer;
 import javax.swing.RepaintManager;
 import javax.swing.plaf.LayerUI;
@@ -10,6 +13,7 @@ import fi.graphsheets.graphelements.Sheet;
 import fi.graphsheets.graphelements.Sheet.SheetEntry;
 import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSRepaintManager;
+import fi.graphsheets.ui.IZoomableComponent;
 import fi.graphsheets.ui.ZoomableContainerControlLayer;
 import fi.graphsheets.ui.atomic.GSTextArea;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
@@ -38,9 +42,10 @@ public class SheetContainerFactory {
 	
 	
 	@SuppressWarnings("serial")
-	private class SheetContainer extends AbstractZoomableContainer {
+	private class SheetContainer extends AbstractZoomableContainer{
 		
 		private Sheet sheet;
+		private int zoom;
 		private SheetContainer(Sheet sheet) {
 			this.sheet = sheet;
 			this.setLayout(new SheetLayout());
@@ -75,6 +80,38 @@ public class SheetContainerFactory {
 				}
 			}
 		}
+//
+//		@Override
+//		public void setZoomTransform(AffineTransform zoomTransform) {
+//			for(Component c : this.getComponents()) if(c instanceof IZoomableComponent z) z.setZoomTransform(zoomTransform);
+//			
+//		}
+
+		@Override
+		public int getMaxZoom() {
+			return 10;
+		}
+
+		@Override
+		public int getMinZoom() {
+			return 1;
+		}
+
+		@Override
+		public void incrementZoomCounter() {
+			zoom++;
+		}
+
+		@Override
+		public void decrementZoomCounter() {
+			zoom--;
+		}
+
+		@Override
+		public int getZoomCounter() {
+			return zoom;
+		}
+
 
 	}
 }

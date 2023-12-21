@@ -17,6 +17,16 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	private AffineTransform zoomTransform = AffineTransform.getScaleInstance(1, 1);
 	private AffineTransform scaleTransform = AffineTransform.getScaleInstance(1, 1);
 	
+	public abstract int getMaxZoom();
+	
+	public abstract int getMinZoom();
+	
+	public abstract int getZoomCounter();
+	
+	public abstract void incrementZoomCounter();
+	
+	public abstract void decrementZoomCounter();
+	
 	public Rectangle getZoomRegion() {
 		if(zoomRegion == null) {
 			zoomRegion = new Rectangle(this.getWidth(), this.getHeight());
@@ -31,6 +41,8 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	
 
 	public void zoomTo(Point origin, int depth) {
+		if(getZoomCounter() > getMaxZoom()) return;
+		incrementZoomCounter();
 		try {
 		zoomTransform.createInverse().transform(origin, origin);
 		AffineTransform translate = AffineTransform.getTranslateInstance(origin.x, origin.y);
@@ -52,6 +64,8 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	}
 	
 	public void zoomFrom(Point origin, int depth) {
+		if(getZoomCounter() < getMinZoom()) return;
+		decrementZoomCounter();
 		try {
 		zoomTransform.createInverse().transform(origin, origin);
 		AffineTransform translate = AffineTransform.getTranslateInstance(origin.x, origin.y);
@@ -71,6 +85,18 @@ public abstract class AbstractZoomableContainer extends JComponent {
 		}
 		revalidate();
 	}
+	
+	public void setZoomTransform(AffineTransform zoomTransform) {
+
+		this.zoomTransform = AffineTransform.getScaleInstance(zoomTransform.getScaleX(), zoomTransform.getScaleY());
+		this.scaleTransform = AffineTransform.getScaleInstance(zoomTransform.getScaleX(), zoomTransform.getScaleY());
+		try {
+			this.zoomRegion = zoomTransform.createInverse().createTransformedShape(getZoomRegion()).getBounds();
+		} catch (NoninvertibleTransformException e) {
+			e.printStackTrace();
+		}
+		revalidate();
+	}
 
 	public AffineTransform getZoomTransform() {
 		return zoomTransform;
@@ -79,5 +105,11 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	public AffineTransform getScaleTransform() {
 		return scaleTransform;
 	}
+//	
+//	private AbstractZoomComponent root;
+//	
+//	public void selectAt(Point point) {
+//		
+//	}
 	
 }

@@ -21,6 +21,7 @@ public class GSTextArea extends JTextArea implements IZoomableComponent {
 		super();
 		this.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
 		this.setLineWrap(true);
+		
 	}
 	
 	@Override
