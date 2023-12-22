@@ -49,7 +49,7 @@ public class Main{
 		
 		//Nodes in a galaxy formation
 		for (int i = 0; i < 1000; i++) {
-			nodes.add(new Node((int) (Math.cos(i / 10.0) * i * 100.0), (int) (Math.sin(i / 10.0) * i * 100.0),
+			nodes.add(new Node(100000/2 + (int) (Math.cos(i / 10.0) * i * 100.0), 100000/2 + (int) (Math.sin(i / 10.0) * i * 100.0),
 					(int) (100), (int) (100), i, new Cell.Atomic.TextCell("ab")));
 		}
 
@@ -58,20 +58,20 @@ public class Main{
 		List<Cell> cells = new ArrayList<Cell>();
 
 		cells.add(new Cell.GraphCell(graph));
-		cells.add(new Cell.GraphCell(graph));
-		cells.add(new Cell.Atomic.TextCell("A"));
-		cells.add(new Cell.Atomic.TextCell("A"));
-		cells.add(new Cell.Atomic.TextCell("A"));
-		cells.add(new Cell.Atomic.TextCell("A"));
-		cells.add(new Cell.Atomic.TextCell("A"));
-		cells.add(new Cell.Atomic.TextCell("A"));
-		cells.add(new Cell.Atomic.TextCell("A"));
+//		cells.add(new Cell.GraphCell(graph));
+//		cells.add(new Cell.Atomic.TextCell("A"));
+//		cells.add(new Cell.Atomic.TextCell("A"));
+//		cells.add(new Cell.Atomic.TextCell("A"));
+//		cells.add(new Cell.Atomic.TextCell("A"));
+//		cells.add(new Cell.Atomic.TextCell("A"));
+//		cells.add(new Cell.Atomic.TextCell("A"));
+//		cells.add(new Cell.Atomic.TextCell("A"));
 		 
 
 		ArrayList<Node> nodes1 = new ArrayList<Node>();
 		ArrayList<Edge> edges1 = new ArrayList<Edge>();
 		
-		nodes1.add(new Node(0,0,300,300,0, new Cell.SheetCell(new Sheet(cells, 3, 3))));
+		nodes1.add(new Node(0,0,100,100,0, new Cell.SheetCell(new Sheet(cells, 1, 1))));
 		
 		for (int i = 20; i < 10020; i++) {
 			nodes1.add(new Node((int) (Math.cos(i / 10.0) * i * 100.0), (int) (Math.sin(i / 10.0) * i * 100.0),
@@ -80,7 +80,7 @@ public class Main{
 		
 		Graph graph1 = new Graph(nodes1, edges1);
 		
-		JLayer<? extends AbstractZoomableContainer> layer = GraphContainerFactory.createZoomableGraphContainer(graph1);
+		JLayer<? extends AbstractZoomableContainer> layer = GraphContainerFactory.createZoomableGraphContainer(graph1, true);
 //		
 //		String[] names = Stream.generate(() -> {return UUID.randomUUID().toString();}).limit(sheet1.getCells().length).toArray(String[]::new);
 		

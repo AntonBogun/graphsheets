@@ -31,6 +31,15 @@ public class Graph {
 	public ArrayList<Edge> getEdges() {
         return edges;
 	}
+	
+
+	public double getDiameter() {
+		Node node = nodes.get(0);
+		Node farthestNode = nodes.stream().max((node1, node2) -> (Double.compare(Node.getDistance(node1, node),(Node.getDistance(node2, node))))).get();
+		Node farthestNode2 = nodes.stream().max((node1, node2) -> (Double.compare(Node.getDistance(node1, farthestNode),(Node.getDistance(node1, farthestNode))))).get();
+		return Node.getDistance(farthestNode, farthestNode2);
+	}
+	
 //	
 //	public Node getNodeByCoordinates(int x, int y) {
 //		for (Node node : nodes) {

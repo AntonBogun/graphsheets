@@ -17,8 +17,9 @@ import fi.graphsheets.graphelements.Sheet.SheetEntry;
 import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSRepaintManager;
 import fi.graphsheets.ui.IZoomableComponent;
+import fi.graphsheets.ui.ZoomableContainerLayout;
 
-public class SheetLayout implements LayoutManager {
+public class SheetLayout extends ZoomableContainerLayout implements LayoutManager {
 
 	
 	@Override
@@ -45,36 +46,30 @@ public class SheetLayout implements LayoutManager {
     private Rectangle previousBounds = new Rectangle();
 	@Override
 	public void layoutContainer(Container parent) {
-    	if(parent instanceof AbstractZoomableContainer container) {
-    		if(container.getZoomRegion() == previousBounds) return;
-    		((GSRepaintManager)RepaintManager.currentManager(container)).setPainting(false);
-    		Component[] components = parent.getComponents();
-			for (Component component : components) {
-				if(component instanceof JComponent jcomponent && jcomponent.getClientProperty("entry") instanceof SheetEntry entry) {
-					
-					Rectangle defaultBounds = new Rectangle(entry.x() * 100, entry.y() * 100, 100, 100);
-					component.setBounds(container.getZoomTransform().createTransformedShape(defaultBounds).getBounds());
-					
-					
-					if(jcomponent instanceof IZoomableComponent zcomponent) {
-						zcomponent.setZoomTransform(container.getZoomTransform());
-					} else if(jcomponent instanceof JLayer jlayer && jlayer.getView() instanceof AbstractZoomableContainer subcontainer) {
+    	super.layoutZoomableContainer(parent);
+	}
+
+	@Override
+	public void layoutComponent(Component component, AbstractZoomableContainer container) {
+		if(component instanceof JComponent jcomponent && jcomponent.getClientProperty("entry") instanceof SheetEntry entry) {
+			
+
+			Rectangle defaultBounds = new Rectangle(entry.x() * 100, entry.y() * 100, 100, 100);
+//					System.out.println(container.getZoomTransform().createTransformedShape(defaultBounds).getBounds());
+			component.setBounds(container.getZoomTransform().createTransformedShape(defaultBounds).getBounds());
+			
+			
+			if(jcomponent instanceof IZoomableComponent zcomponent) {
+				zcomponent.setZoomTransform(container.getZoomTransform());
+			} else if(jcomponent instanceof JLayer jlayer && jlayer.getView() instanceof AbstractZoomableContainer subcontainer) {
 //						System.out.println(subcontainer.getClass());
 //						System.out.println(container.getScaleTransform());AffineTransform trans = container.getScaleTransform();
-						subcontainer.setZoomTransform(container.getScaleTransform());
-						
-					}
-					
-				}
+				subcontainer.addZoomTransform(container.getPrevScaleTransform());
 				
 			}
-    		((GSRepaintManager)RepaintManager.currentManager(container)).setPainting(true);
-			SwingUtilities.invokeLater(() -> {
-				((GSRepaintManager) RepaintManager.currentManager(container)).markCompletelyDirty(container);
-				((GSRepaintManager) RepaintManager.currentManager(container)).paintDirtyRegions();
-			});
-	    	previousBounds = container.getZoomRegion();
-    	}
+			
+		}
+		
 	}
 
 }

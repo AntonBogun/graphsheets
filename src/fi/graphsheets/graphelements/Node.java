@@ -51,6 +51,10 @@ public class Node {
 		y = j;
 
 	}
+	
+	public static double getDistance(Node node1, Node node2) {
+		return Math.sqrt(Math.pow(node1.getX() - node2.getX(), 2) + Math.pow(node1.getY() - node2.getY(), 2));
+	}
 
 
 	public int getWidth() {
