@@ -16,6 +16,8 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 		super.installUI(c);
 	    @SuppressWarnings("unchecked")
 		JLayer<? extends AbstractZoomableContainer> l = (JLayer<? extends AbstractZoomableContainer>) c;
+		//For the future, make the events pass to the parent container transformed with the correct zoom transform
+	    //in order to allow for zooming to sub-pixel levels
 	    if(l.getView().isZoomingEnabled())
 	    	l.setLayerEventMask(AWTEvent.MOUSE_WHEEL_EVENT_MASK | AWTEvent.KEY_EVENT_MASK);
 	}
@@ -37,8 +39,6 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 	public void processMouseWheelEvent(MouseWheelEvent e, JLayer<? extends AbstractZoomableContainer> l) {
 		Point origin = e.getPoint();
 		
-		//FIXME check
-//		if(!(l.getComponentAt(origin) instanceof AbstractZoomableContainer)) return;
 		if (e.getWheelRotation() > 0) {
 			l.getView().zoomFrom(origin, e.getWheelRotation()*2);
 			l.requestFocus();

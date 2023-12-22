@@ -6,7 +6,31 @@ import java.util.List;
 
 public class Sheet implements Iterable<Sheet.SheetEntry>{
 
-	public static record SheetEntry(int x, int y, Cell cell) {}
+	public static class SheetEntry {
+		private int x;
+		private int y;
+		private Cell cell;
+		
+		public SheetEntry(int x, int y, Cell cell) {
+			this.x = x;
+			this.y = y;
+			this.cell = cell;
+		}
+		
+		
+		public int x() {
+			return x;
+		}
+		public int y() {
+			return y;
+		}
+		public Cell cell() {
+			return cell;
+		}
+		public void setCell(Cell cell) {
+			this.cell = cell;
+		}
+	}
 	
 	private List<Cell> cells = new ArrayList<Cell>();
 	private int width;
