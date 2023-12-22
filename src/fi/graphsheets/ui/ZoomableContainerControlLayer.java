@@ -18,7 +18,7 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 		JLayer<? extends AbstractZoomableContainer> l = (JLayer<? extends AbstractZoomableContainer>) c;
 	    if(l.getView().isZoomingEnabled())
 	    	l.setLayerEventMask(AWTEvent.MOUSE_WHEEL_EVENT_MASK | AWTEvent.KEY_EVENT_MASK);
-	 }
+	}
 	
 	public void uninstallUI(JComponent c) {
 		 super.uninstallUI(c);
@@ -30,26 +30,15 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 	
 	@Override
     public void eventDispatched(AWTEvent e, JLayer<? extends AbstractZoomableContainer> l) {
-		System.out.println("event dispatched");
-//		if(!l.getView().isProcessing()) {
-//			l.getView().setProcessingLock();
-		//}
-//		synchronized(AbstractZoomableContainer.lock) {
-//			System.out.println("event dispatched passed");
 			super.eventDispatched(e, l);
-//			System.out.println("event dispatched finished");
-//		}
-		
-		
     }
 	
 	@Override
 	public void processMouseWheelEvent(MouseWheelEvent e, JLayer<? extends AbstractZoomableContainer> l) {
-		Point origin = new Point(e.getX(), e.getY());
+		Point origin = e.getPoint();
 		
 		//FIXME check
 //		if(!(l.getComponentAt(origin) instanceof AbstractZoomableContainer)) return;
-//		System.out.println("process mouse wheel event");
 		if (e.getWheelRotation() > 0) {
 			l.getView().zoomFrom(origin, e.getWheelRotation()*2);
 			l.requestFocus();

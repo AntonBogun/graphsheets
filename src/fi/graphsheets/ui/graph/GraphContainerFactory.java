@@ -1,5 +1,7 @@
 package fi.graphsheets.ui.graph;
 
+import java.awt.geom.AffineTransform;
+
 import javax.swing.JLayer;
 import javax.swing.RepaintManager;
 import javax.swing.plaf.LayerUI;
@@ -62,6 +64,10 @@ public class GraphContainerFactory {
 			
 			case Cell.GraphCell(Graph graph) -> {
 				JLayer<? extends AbstractZoomableContainer> graphContainer = GraphContainerFactory.createZoomableGraphContainer(graph, false);
+				double size = graph.getDiameter();
+				AffineTransform scale = AffineTransform.getScaleInstance(100/size, 100/size);
+//				scale.concatenate(AffineTransform.getTranslateInstance(size/2, size/2));
+				graphContainer.getView().addZoomTransform(scale);
 				graphContainer.putClientProperty("node", node);
 				add(graphContainer);
 			}
