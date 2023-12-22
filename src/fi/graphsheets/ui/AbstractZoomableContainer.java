@@ -4,7 +4,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import java.lang.reflect.Type;
 
 import javax.swing.JComponent;
 
@@ -27,21 +26,6 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	
 	public abstract boolean isZoomingEnabled();
 	
-//	public static Object lock = new Object();
-//	
-//	public void setProcessingLock() {
-////		processingZooming = true;
-//		lock.
-//	}
-//	
-//	public boolean isProcessing() {
-//		return processingZooming;
-//	}
-//	
-//
-//	public void clearProcessingLock() {
-//		processingZooming = false;
-//	}
 	
 	
 	
@@ -59,15 +43,8 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	
 	private AffineTransform prevScaleTransform;
 	public void zoomTo(Point origin, int depth) {
-		System.out.println("zoom in");
-		if(!isZoomingEnabled()) {
-//			clearProcessingLock();
-			return;
-		}
-		if(getZoomCounter() > getMaxZoom()) {
-//			clearProcessingLock();
-			return;
-		}
+		if(!isZoomingEnabled()) return;
+		if(getZoomCounter() > getMaxZoom()) return;
 		incrementZoomCounter();
 		try {
 		zoomTransform.createInverse().transform(origin, origin);
@@ -92,15 +69,8 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	}
 	
 	public void zoomFrom(Point origin, int depth) {
-		System.out.println("zoom out");
-		if(!isZoomingEnabled()) {
-//			clearProcessingLock();
-			return;
-		}
-		if(getZoomCounter() < getMinZoom()) {
-//			clearProcessingLock();
-			return;
-		}
+		if(!isZoomingEnabled()) return;
+		if(getZoomCounter() < getMinZoom()) return;
 		decrementZoomCounter();
 		try {
 		zoomTransform.createInverse().transform(origin, origin);
@@ -124,19 +94,9 @@ public abstract class AbstractZoomableContainer extends JComponent {
 		revalidate();
 	}
 	
-	private double prevz;
 	public void addZoomTransform(AffineTransform zoomTransform) {
-		System.out.println("add zoom");
-//		if(Math.abs(Math.log(this.zoomTransform.getScaleX())/Math.log(2)-prevz)-1>0.1) {
-////			zoomTransform.concatenate(AffineTransform.getScaleInstance(0.5, 0.5));
-			System.out.println(Math.log(this.zoomTransform.getScaleX())/Math.log(2)-prevz);
-//		}
-		prevz = Math.log(this.zoomTransform.getScaleX())/Math.log(2);
 		this.prevScaleTransform = zoomTransform;
-		if(zoomTransform == null) {
-//			clearProcessingLock();
-			return;
-		}
+		if(zoomTransform == null) return;
 		if(this.zoomTransform == null) this.zoomTransform = AffineTransform.getRotateInstance(0);
 		if(this.scaleTransform == null) this.scaleTransform = AffineTransform.getRotateInstance(0);
 		this.zoomTransform.concatenate(zoomTransform);
@@ -157,12 +117,6 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	public AffineTransform getScaleTransform() {
 		return scaleTransform;
 	}
-//	
-//	private AbstractZoomComponent root;
-//	
-//	public void selectAt(Point point) {
-//		
-//	}
 
 	public AffineTransform getPrevScaleTransform() {
 		if(prevScaleTransform == null) prevScaleTransform = AffineTransform.getRotateInstance(0);

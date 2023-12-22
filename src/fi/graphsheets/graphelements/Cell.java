@@ -1,7 +1,5 @@
 package fi.graphsheets.graphelements;
 
-import fi.graphsheets.graphelements.Graph;
-
 public sealed interface Cell {
 	
 	public sealed interface Atomic extends Cell{

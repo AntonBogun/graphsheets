@@ -40,14 +40,4 @@ public class Graph {
 		return Node.getDistance(farthestNode, farthestNode2);
 	}
 	
-//	
-//	public Node getNodeByCoordinates(int x, int y) {
-//		for (Node node : nodes) {
-//			if (node.getX() == x && node.getY() == y) {
-//				return node;
-//			}
-//		}
-//		return null;
-//	}
-	
 }
