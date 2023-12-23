@@ -43,7 +43,7 @@ public class SheetLayout extends ZoomableContainerLayout implements LayoutManage
 	}
 
 	@Override
-	public void layoutComponent(Component component, AbstractZoomableContainer container) {
+	public void layoutComponent(Component component, AbstractZoomableContainer container, boolean newZoom) {
 		if(component instanceof JComponent jcomponent && jcomponent.getClientProperty("entry") instanceof SheetEntry entry) {
 			
 
@@ -53,7 +53,7 @@ public class SheetLayout extends ZoomableContainerLayout implements LayoutManage
 			
 			if(jcomponent instanceof IZoomableComponent zcomponent) {
 				zcomponent.setZoomTransform(container.getZoomTransform());
-			} else if(jcomponent instanceof JLayer jlayer && jlayer.getView() instanceof AbstractZoomableContainer subcontainer) {
+			} else if(jcomponent instanceof JLayer jlayer && jlayer.getView() instanceof AbstractZoomableContainer subcontainer && newZoom) {
 				subcontainer.addZoomTransform(container.getPrevScaleTransform());
 				
 			}

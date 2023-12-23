@@ -10,9 +10,10 @@ import javax.swing.SwingUtilities;
 public abstract class ZoomableContainerLayout {
 	
     private Rectangle previousBounds = new Rectangle();
+    private int numComponents = 0;
 	public void layoutZoomableContainer(Container parent) {
 		if(parent instanceof AbstractZoomableContainer container) {
-    		if(container.getZoomRegion() == previousBounds) { 
+    		if(container.getZoomRegion() == previousBounds && parent.getComponentCount() == numComponents) { 
     			return;
     		}
     		((GSRepaintManager)RepaintManager.currentManager(container)).setPainting(false);
@@ -20,7 +21,7 @@ public abstract class ZoomableContainerLayout {
 	    	Component[] components = parent.getComponents();
 	    	
 			for (Component component : components) {
-				layoutComponent(component, container);
+				layoutComponent(component, container, parent.getComponentCount() == numComponents);
 			}
 			
     		((GSRepaintManager)RepaintManager.currentManager(container)).setPainting(true);
@@ -29,9 +30,10 @@ public abstract class ZoomableContainerLayout {
 				((GSRepaintManager) RepaintManager.currentManager(container)).paintDirtyRegions();
 			});
 	    	previousBounds = container.getZoomRegion();
+	    	numComponents = parent.getComponentCount();
     	}
 	}
 	
-	public abstract void layoutComponent(Component component, AbstractZoomableContainer container);
+	public abstract void layoutComponent(Component component, AbstractZoomableContainer container, boolean newZoom);
 
 }

@@ -1,7 +1,9 @@
 package fi.graphsheets.ui.graph;
 
+import java.awt.Point;
 import java.awt.geom.AffineTransform;
 
+import javax.swing.JComponent;
 import javax.swing.JLayer;
 import javax.swing.RepaintManager;
 import javax.swing.plaf.LayerUI;
@@ -12,6 +14,7 @@ import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet;
 import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSRepaintManager;
+import fi.graphsheets.ui.IZoomableComponent;
 import fi.graphsheets.ui.ZoomableContainerControlLayer;
 import fi.graphsheets.ui.atomic.GSTextArea;
 import fi.graphsheets.ui.sheet.SheetContainerFactory;
@@ -38,6 +41,19 @@ public class GraphContainerFactory {
 		return layer;
 	}
 	
+	public static void addNewElement(JComponent container, Point point, int width, int height, Cell cell) throws IllegalArgumentException{
+		//TODO Make proper ID system
+		if(container instanceof GraphContainer gcontainer) {
+			Node node = new Node(point.x, point.y, width, height, 1, cell);
+			gcontainer.initialiseNode(node);
+			gcontainer.graph.addNode(node);
+			gcontainer.doLayout();
+			gcontainer.repaint();
+		} else {
+			throw new IllegalArgumentException("Container is not a GraphContainer");
+		}
+	}
+	
 	
 	@SuppressWarnings("serial")
 	private class GraphContainer extends AbstractZoomableContainer{
@@ -59,7 +75,7 @@ public class GraphContainerFactory {
 			}
 		}
 
-		private void initialiseNode(Node node) {
+		private JComponent initialiseNode(Node node) {
 			switch (node.getCell()) {
 			
 			case Cell.GraphCell(Graph graph) -> {
@@ -70,6 +86,7 @@ public class GraphContainerFactory {
 				graphContainer.getView().addZoomTransform(scale);
 				graphContainer.putClientProperty("node", node);
 				add(graphContainer);
+				return graphContainer;
 			}
 			
 			case Cell.Atomic.TextCell(String text) -> {
@@ -77,12 +94,14 @@ public class GraphContainerFactory {
 				textarea.setText(text);
 				textarea.putClientProperty("node", node);
 				add(textarea);
+				return textarea;
 			}
 			
 			case Cell.SheetCell(Sheet sheet) -> {
 				JLayer<? extends AbstractZoomableContainer> sheetContainer = SheetContainerFactory.createZoomableSheetContainer(sheet);
 				sheetContainer.putClientProperty("node", node);
 				add(sheetContainer);
+				return sheetContainer;
 			}
 			
 			default -> throw new IllegalArgumentException("Unexpected value: " + node.getCell());

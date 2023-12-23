@@ -7,6 +7,8 @@ import java.awt.geom.NoninvertibleTransformException;
 
 import javax.swing.JComponent;
 
+import fi.graphsheets.graphelements.Cell;
+
 @SuppressWarnings("serial")
 public abstract class AbstractZoomableContainer extends JComponent {
 
@@ -93,6 +95,14 @@ public abstract class AbstractZoomableContainer extends JComponent {
 		}
 		doLayout();
 		revalidate();
+	}
+	
+	public void convertFromScreen(Point point) {
+		try {
+			zoomTransform.createInverse().transform(point, point);
+		} catch (NoninvertibleTransformException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void addZoomTransform(AffineTransform zoomTransform) {
