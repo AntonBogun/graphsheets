@@ -13,6 +13,7 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	private Rectangle zoomRegion;
 	private AffineTransform zoomTransform = AffineTransform.getScaleInstance(1, 1);
 	private AffineTransform scaleTransform = AffineTransform.getScaleInstance(1, 1);
+	
 //	
 	public abstract int getMaxZoom();
 	
@@ -122,5 +123,7 @@ public abstract class AbstractZoomableContainer extends JComponent {
 		if(prevScaleTransform == null) prevScaleTransform = AffineTransform.getRotateInstance(0);
 		return prevScaleTransform;
 	}
+	
+	
 	
 }

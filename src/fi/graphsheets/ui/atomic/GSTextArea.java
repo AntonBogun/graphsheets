@@ -33,7 +33,7 @@ public class GSTextArea extends JTextArea implements IZoomableComponent {
 				} else if(getClientProperty("entry") instanceof SheetEntry entry) {
 					entry.setCell(new Cell.Atomic.TextCell(getText()));
 				} else {
-					System.out.println("ERROR NODE DOES NOT HAVE A SHEET ENTRY NOR A NODE");
+//					System.out.println("ERROR NODE DOES NOT HAVE A SHEET ENTRY NOR A NODE");
 				}
 
 			}
@@ -45,7 +45,7 @@ public class GSTextArea extends JTextArea implements IZoomableComponent {
 				} else if(getClientProperty("entry") instanceof SheetEntry entry) {
 					entry.setCell(new Cell.Atomic.TextCell(getText()));
 				} else {
-					System.out.println("ERROR NODE DOES NOT HAVE A SHEET ENTRY NOR A NODE");
+//					System.out.println("ERROR NODE DOES NOT HAVE A SHEET ENTRY NOR A NODE");
 				}
 
 			}
