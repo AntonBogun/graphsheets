@@ -118,11 +118,11 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 	}
 	
 	public void processMouseEvent(MouseEvent e, JLayer<? extends AbstractZoomableContainer> l) {
-		if (e.getID() != java.awt.event.MouseEvent.MOUSE_PRESSED || !GlobalState.isAddText()) {
-			e.consume();
+		if (!GlobalState.isAddText()) {
+//			e.consume();
 			return;
 		}
-		if(e.getSource()!=l) {e.consume(); return;}
+		if(e.getSource()!=l || e.getID() != java.awt.event.MouseEvent.MOUSE_PRESSED) {e.consume(); return;}
 		if (SwingUtilities.isLeftMouseButton(e)) {
 			Point point = e.getPoint();
 			l.getView().convertFromScreen(point);
