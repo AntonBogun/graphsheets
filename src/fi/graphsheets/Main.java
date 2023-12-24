@@ -15,7 +15,9 @@ import fi.graphsheets.graphelements.Edge;
 import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.ui.AbstractZoomableContainer;
+import fi.graphsheets.ui.GSMenu;
 import fi.graphsheets.ui.GSRepaintManager;
+import fi.graphsheets.ui.GlobalState;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
 
 
@@ -71,6 +73,9 @@ public class Main{
 //		String[] names = Stream.generate(() -> {return UUID.randomUUID().toString();}).limit(sheet1.getCells().length).toArray(String[]::new);
 		
 //		JTable table = new JTable(sheet1.getCells(), names);
+		//Add menu bar
+		GlobalState.initaliseState(frame);
+		frame.setJMenuBar(new GSMenu());
 		frame.add(layer);
 		frame.setSize(1000, 1000);
 		frame.setVisible(true);

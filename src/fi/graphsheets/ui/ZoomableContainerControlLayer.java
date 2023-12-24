@@ -50,29 +50,31 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 ////				System.out.println(l.getParent().getParent().getParent());
 ////				System.out.println(l);
 				if(e instanceof MouseEvent e1) {
+					this.processMouseEvent(e1, l);
 					//middle mouse button
-					if(SwingUtilities.isMiddleMouseButton(e1)) {
-						if (e.getID() == MouseEvent.MOUSE_PRESSED) {
-	//						l.getView()
-							//TODO add node to graph
-							Point point = e1.getPoint();
-							System.out.println(e1.getPoint());
-							l.getView().convertFromScreen(point);
-							System.out.println(e1.getPoint());
-							System.out.println(point);
-							try {
-								GraphContainerFactory.addNewElement(l.getView(), point, 100, 100, new Cell.Atomic.TextCell("A"));
-							} catch(IllegalArgumentException e2) {
-								e2.printStackTrace();
-							}
-							e1.consume();
-						} else {
-							((ZoomableContainerControlLayer) ((JComponent) parentcontainer.getParent()).getUI()).eventDispatched(e, (JLayer<? extends AbstractZoomableContainer>) parentcontainer.getParent());
-	//						
-						}
+//					if(e1.getSource()!=l) {e1.consume(); return;}
+//					if(SwingUtilities.isMiddleMouseButton(e1)) {
+//						if (e.getID() == MouseEvent.MOUSE_PRESSED) {
+//	//						l.getView()
+//							//TODO add node to graph
+//							Point point = e1.getPoint();
+//							System.out.println(e1.getPoint());
+//							l.getView().convertFromScreen(point);
+//							System.out.println(e1.getPoint());
+//							System.out.println(point);
+//							try {
+//								GraphContainerFactory.addNewElement(l.getView(), point, 100, 100, new Cell.Atomic.TextCell("A"));
+//							} catch(IllegalArgumentException e2) {
+//								e2.printStackTrace();
+//							}
+//							e1.consume();
+//						} else {
+//							((ZoomableContainerControlLayer) ((JComponent) parentcontainer.getParent()).getUI()).eventDispatched(e, (JLayer<? extends AbstractZoomableContainer>) parentcontainer.getParent());
+//	//						
+//						}
 					}
 					
-				}
+//				}
 				
 				if(e instanceof MouseWheelEvent e1) {
 					Point point = ((MouseWheelEvent) e).getPoint();
@@ -116,13 +118,17 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 	}
 	
 	public void processMouseEvent(MouseEvent e, JLayer<? extends AbstractZoomableContainer> l) {
-		if (e.getID() != java.awt.event.MouseEvent.MOUSE_PRESSED) {
+		if (e.getID() != java.awt.event.MouseEvent.MOUSE_PRESSED || !GlobalState.isAddText()) {
+			e.consume();
 			return;
 		}
-		if (SwingUtilities.isMiddleMouseButton(e)) {
+		if(e.getSource()!=l) {e.consume(); return;}
+		if (SwingUtilities.isLeftMouseButton(e)) {
 			Point point = e.getPoint();
 			l.getView().convertFromScreen(point);
 			GraphContainerFactory.addNewElement(l.getView(), point, 100, 100, new Cell.Atomic.TextCell("A"));
+			GlobalState.clearAdd();
+			e.consume();
 		}
 	}
 	
