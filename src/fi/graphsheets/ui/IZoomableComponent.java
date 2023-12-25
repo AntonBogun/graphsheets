@@ -6,6 +6,6 @@ public interface IZoomableComponent {
 		
 	public void setZoomTransform(AffineTransform zoomTransform);
 	
-
+	
 	
 }

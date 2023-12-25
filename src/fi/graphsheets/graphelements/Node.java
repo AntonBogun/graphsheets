@@ -70,5 +70,15 @@ public class Node implements Serializable{
 	public int getID() {
 		return id;
 	}
+
+	public void setWidth(int width) {
+		this.width = width;
+		
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
+		
+	}
 	
 }

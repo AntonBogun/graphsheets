@@ -56,7 +56,7 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 //					if(SwingUtilities.isMiddleMouseButton(e1)) {
 //						if (e.getID() == MouseEvent.MOUSE_PRESSED) {
 //	//						l.getView()
-//							//TODO add node to graph
+//							//TO DO add node to graph
 //							Point point = e1.getPoint();
 //							System.out.println(e1.getPoint());
 //							l.getView().convertFromScreen(point);
@@ -122,6 +122,7 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 //			e.consume();
 			return;
 		}
+		
 		if(e.getSource()!=l || e.getID() != java.awt.event.MouseEvent.MOUSE_PRESSED) {e.consume(); return;}
 		if (SwingUtilities.isLeftMouseButton(e)) {
 			Point point = e.getPoint();
@@ -146,6 +147,9 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 			l.requestFocus();
 		}
 	}
+	
+	
+	
 	
 	
 }

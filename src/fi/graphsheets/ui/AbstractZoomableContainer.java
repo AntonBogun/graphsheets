@@ -45,6 +45,7 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	}
 	
 	private AffineTransform prevScaleTransform;
+	public boolean forcedRepaint;
 	public void zoomTo(Point origin, int depth) {
 		if(!isZoomingEnabled()) return;
 		if(getZoomCounter() > getMaxZoom()) return;
@@ -132,6 +133,12 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	public AffineTransform getPrevScaleTransform() {
 		if(prevScaleTransform == null) prevScaleTransform = AffineTransform.getRotateInstance(0);
 		return prevScaleTransform;
+	}
+
+	public void forceRepaint() {
+		forcedRepaint = true;
+		doLayout();
+		
 	}
 	
 	
