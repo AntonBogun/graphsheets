@@ -87,7 +87,6 @@ public class GraphContainerFactory {
 				double size = graph.getDiameter();
 				AffineTransform scale = AffineTransform.getScaleInstance(100/size, 100/size);
 //				scale.concatenate(AffineTransform.getTranslateInstance(size/2, size/2));
-				graphContainer.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
 				graphContainer.getView().addZoomTransform(scale);
 				graphContainer.putClientProperty("node", node);
 				add(graphContainer);

@@ -28,6 +28,7 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 	    //in order to allow for zooming to sub-pixel levels
 //	    
 	    l.setLayerEventMask(AWTEvent.MOUSE_WHEEL_EVENT_MASK | AWTEvent.KEY_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
+	    l.getView().addMouseMotionListener(new ResizeMoveMouseMotionAdapter());
 	}
 	
 	public void uninstallUI(JComponent c) {
@@ -124,7 +125,7 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 		}
 
 		System.out.println(e.getSource());
-		if(e.getSource()!=l || e.getID() != MouseEvent.MOUSE_PRESSED) {e.consume(); return;}
+		if((e.getSource()!=l.getView() && e.getSource()!=l) || e.getID() != MouseEvent.MOUSE_PRESSED) {e.consume(); return;}
 		
 		if (SwingUtilities.isLeftMouseButton(e) && GlobalState.isAddGraph()) {
 			Point point = e.getPoint();

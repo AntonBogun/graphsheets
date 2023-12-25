@@ -31,6 +31,8 @@ public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
 			source.setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
 		} else if (e.getY() > source.getHeight() - 10) {
 			source.setCursor(Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR));
+		} else if(GlobalState.isAddGraph() || GlobalState.isAddText()){
+			source.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 		} else {
 			source.setCursor(Cursor.getPredefinedCursor(defaultCursor));
 		}
@@ -48,40 +50,72 @@ public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
 			Point p = new Point((int) (e.getX()/zoomTransform.getScaleX()), (int) (e.getY()/zoomTransform.getScaleY()));
 //			System.out.println(p);
 //			((AbstractZoomableContainer)getParent()).convertFromScreen(p);
-			if(source.getClientProperty("node") instanceof Node node && p.x<1000) {
+			Node node = null;
+			if(source.getClientProperty("node") instanceof Node node1) node = node1;
+			else if(((JComponent) source.getParent()).getClientProperty("node") instanceof Node node1) node = node1;
+			
+
+			AbstractZoomableContainer parent = null;
+			if(source.getParent() instanceof AbstractZoomableContainer cont) parent = cont;
+			else if (source.getParent().getParent() instanceof AbstractZoomableContainer cont) parent = cont;
+			
+			if(p.x<1000) {
 				node.setWidth(p.x);
-				((AbstractZoomableContainer)source.getParent()).forceRepaint();
+				parent.forceRepaint();
 			}
 		}
 		
 		if(source.getCursor().getType() == Cursor.S_RESIZE_CURSOR) {
 			Point p = new Point((int) (e.getX()/zoomTransform.getScaleX()), (int) (e.getY()/zoomTransform.getScaleY()));
-			if(source.getClientProperty("node") instanceof Node node && p.y<1000) {
+			Node node = null;
+			if(source.getClientProperty("node") instanceof Node node1) node = node1;
+			else if(((JComponent) source.getParent()).getClientProperty("node") instanceof Node node1) node = node1;
+			
+
+			AbstractZoomableContainer parent = null;
+			if(source.getParent() instanceof AbstractZoomableContainer cont) parent = cont;
+			else if (source.getParent().getParent() instanceof AbstractZoomableContainer cont) parent = cont;
+			
+			if(p.y<1000) {
 				node.setHeight(p.y);
-				((AbstractZoomableContainer)source.getParent()).forceRepaint();
+				parent.forceRepaint();
 			}
 		}
 		
 		if(source.getCursor().getType() == Cursor.SE_RESIZE_CURSOR) {
 			Point p = new Point((int) (e.getX()/zoomTransform.getScaleX()), (int) (e.getY()/zoomTransform.getScaleY()));
-			if(source.getClientProperty("node") instanceof Node node && p.x<1000 && p.y<1000) {
+			Node node = null;
+			if(source.getClientProperty("node") instanceof Node node1) node = node1;
+			else if(((JComponent) source.getParent()).getClientProperty("node") instanceof Node node1) node = node1;
+			
+
+			AbstractZoomableContainer parent = null;
+			if(source.getParent() instanceof AbstractZoomableContainer cont) parent = cont;
+			else if (source.getParent().getParent() instanceof AbstractZoomableContainer cont) parent = cont;
+			
+			if(p.x<1000 && p.y<1000) {
 				node.setWidth(p.x);
 				node.setHeight(p.y);
-				((AbstractZoomableContainer)source.getParent()).forceRepaint();
+				parent.forceRepaint();
 			}
 		}
 		
 		if (source.getCursor().getType() == Cursor.HAND_CURSOR) {
-			if (source.getClientProperty("node") instanceof Node node) {
-				MouseEvent e1 = SwingUtilities.convertMouseEvent((Component) e.getSource(), e, source.getParent());
-				Point p = e1.getPoint();
+			Node node = null;
+			if(source.getClientProperty("node") instanceof Node node1) node = node1;
+			else if(((JComponent) source.getParent()).getClientProperty("node") instanceof Node node1) node = node1;
+			MouseEvent e1 = SwingUtilities.convertMouseEvent((Component) e.getSource(), e, source.getParent());
+			Point p = e1.getPoint();
 //				System.out.println(p);
-				((AbstractZoomableContainer)source.getParent()).convertFromScreen(p);
+			AbstractZoomableContainer parent = null;
+			if(source.getParent() instanceof AbstractZoomableContainer cont) parent = cont;
+			else if (source.getParent().getParent() instanceof AbstractZoomableContainer cont) parent = cont;
+			parent.convertFromScreen(p);
 //				System.out.println(p);
-				node.setX(p.x);
-				node.setY(p.y);
-				((AbstractZoomableContainer) source.getParent()).forceRepaint();
-			}
+			node.setX(p.x);
+			node.setY(p.y);
+			parent.forceRepaint();
+		
 		}
 		
 	}
