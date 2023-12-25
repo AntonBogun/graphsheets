@@ -1,5 +1,6 @@
 package fi.graphsheets.ui.sheet;
 
+import java.awt.Cursor;
 import java.awt.geom.AffineTransform;
 
 import javax.swing.JLayer;
@@ -125,6 +126,11 @@ public class SheetContainerFactory {
 		@Override
 		public int getZoomCounter() {
 			return zoom;
+		}
+		
+		@Override
+		public int getDefaultCursor() {
+			return Cursor.DEFAULT_CURSOR;
 		}
 
 

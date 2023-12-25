@@ -1,13 +1,13 @@
 package fi.graphsheets.ui;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 
 import javax.swing.JComponent;
-
-import fi.graphsheets.graphelements.Cell;
 
 @SuppressWarnings("serial")
 public abstract class AbstractZoomableContainer extends JComponent {
@@ -16,6 +16,7 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	private AffineTransform zoomTransform = AffineTransform.getScaleInstance(1, 1);
 	private AffineTransform scaleTransform = AffineTransform.getScaleInstance(1, 1);
 	
+	public abstract int getDefaultCursor();
 //	
 	public abstract int getMaxZoom();
 	
@@ -149,6 +150,12 @@ public abstract class AbstractZoomableContainer extends JComponent {
 		
 	}
 	
-	
+	@Override
+	public void paint(Graphics g) {
+		super.paint(g);
+		g.setColor(Color.white);
+		g.drawRect(0, 0, getWidth()-1, getHeight()-1);
+		g.setColor(Color.black);
+	}
 	
 }

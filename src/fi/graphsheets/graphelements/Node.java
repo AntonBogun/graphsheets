@@ -11,7 +11,7 @@ public class Node implements Serializable{
     private int width = 1;
     private int height = 1;
     private Cell data;
-    private Rectangle bounds;
+    private transient Rectangle bounds;
     private int id;
 	public Node(int x, int y, int width, int height, int id, Cell data) {
 		this.x = x;

@@ -13,6 +13,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.plaf.LayerUI;
 
 import fi.graphsheets.graphelements.Cell;
+import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
 
@@ -118,18 +119,29 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 	}
 	
 	public void processMouseEvent(MouseEvent e, JLayer<? extends AbstractZoomableContainer> l) {
-		if (!GlobalState.isAddText()) {
-//			e.consume();
+		if (!GlobalState.isAddText() && !GlobalState.isAddGraph()) {
+			return;
+		}
+
+		System.out.println(e.getSource());
+		if(e.getSource()!=l || e.getID() != MouseEvent.MOUSE_PRESSED) {e.consume(); return;}
+		
+		if (SwingUtilities.isLeftMouseButton(e) && GlobalState.isAddGraph()) {
+			Point point = e.getPoint();
+			l.getView().convertFromScreen(point);
+			GraphContainerFactory.addNewElement(l.getView(), point, 100, 100, new Cell.GraphCell(new Graph()));
+			GlobalState.clearAdd();
+			e.consume();
 			return;
 		}
 		
-		if(e.getSource()!=l || e.getID() != java.awt.event.MouseEvent.MOUSE_PRESSED) {e.consume(); return;}
-		if (SwingUtilities.isLeftMouseButton(e)) {
+		if (SwingUtilities.isLeftMouseButton(e)  && GlobalState.isAddText()) {
 			Point point = e.getPoint();
 			l.getView().convertFromScreen(point);
 			GraphContainerFactory.addNewElement(l.getView(), point, 100, 100, new Cell.Atomic.TextCell("A"));
 			GlobalState.clearAdd();
 			e.consume();
+			return;
 		}
 	}
 	

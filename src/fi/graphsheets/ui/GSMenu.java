@@ -14,7 +14,7 @@ public class GSMenu extends JMenuBar{
 		super();
 		initialiseMenu();
 	}
-	
+	//TODO edit menu, change font, graph zoom. make custom popup to change properties
 	public void initialiseMenu() {
 		JMenu addMenu = new JMenu("Add");
 		addMenu.setMnemonic(KeyEvent.VK_A);

@@ -1,11 +1,14 @@
 package fi.graphsheets.ui.graph;
 
+import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLayer;
 import javax.swing.RepaintManager;
+import javax.swing.border.BevelBorder;
 import javax.swing.plaf.LayerUI;
 
 import fi.graphsheets.graphelements.Cell;
@@ -14,7 +17,7 @@ import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet;
 import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSRepaintManager;
-import fi.graphsheets.ui.IZoomableComponent;
+import fi.graphsheets.ui.ResizeMoveMouseMotionAdapter;
 import fi.graphsheets.ui.ZoomableContainerControlLayer;
 import fi.graphsheets.ui.atomic.GSTextArea;
 import fi.graphsheets.ui.sheet.SheetContainerFactory;
@@ -34,6 +37,7 @@ public class GraphContainerFactory {
 	public static JLayer<? extends AbstractZoomableContainer> createZoomableGraphContainer(Graph graph, boolean manualZooming) {
 		GraphContainer graphContainer = GraphContainerFactory.getInstance().new GraphContainer(graph, manualZooming);
 		graphContainer.initialiseGraph();
+//		graphContainer.addMouseMotionListener(new ResizeMoveMouseMotionAdapter());
 		
 		LayerUI<AbstractZoomableContainer> layout = new ZoomableContainerControlLayer(); 
 		JLayer<? extends AbstractZoomableContainer> layer = new JLayer<AbstractZoomableContainer>(graphContainer,layout);
@@ -83,6 +87,7 @@ public class GraphContainerFactory {
 				double size = graph.getDiameter();
 				AffineTransform scale = AffineTransform.getScaleInstance(100/size, 100/size);
 //				scale.concatenate(AffineTransform.getTranslateInstance(size/2, size/2));
+				graphContainer.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
 				graphContainer.getView().addZoomTransform(scale);
 				graphContainer.putClientProperty("node", node);
 				add(graphContainer);
@@ -140,6 +145,13 @@ public class GraphContainerFactory {
 		public int getZoomCounter() {
 			return zoom;
 		}
+
+		@Override
+		public int getDefaultCursor() {
+			return Cursor.DEFAULT_CURSOR;
+		}
+		
+		
 
 //		@Override
 //		public void setZoomTransform(AffineTransform zoomTransform) {

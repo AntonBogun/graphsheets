@@ -74,7 +74,7 @@ public class GlobalState {
 		
 		
 		if(chooser.showOpenDialog(new JFrame()) == JFileChooser.APPROVE_OPTION) {
-			File file = null;
+			File file = chooser.getSelectedFile();
 
 			if(!chooser.getSelectedFile().getAbsolutePath().endsWith(".gsf")){
 			    file = new File(chooser.getSelectedFile() + ".gsf");
