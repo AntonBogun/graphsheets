@@ -1,9 +1,11 @@
 package fi.graphsheets.graphelements;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Graph {
+public class Graph implements Serializable{
 	
+	private static final long serialVersionUID = 9012062787300945259L;
 	private ArrayList<Node> nodes;
 	private ArrayList<Edge> edges;
 	public Graph(ArrayList<Node> nodes, ArrayList<Edge> edges) {
@@ -14,6 +16,11 @@ public class Graph {
 	public Graph() {
 		nodes = new ArrayList<Node>();
 		edges = new ArrayList<Edge>();
+	}
+	
+	public void replaceGraph(Graph graph) {
+		this.nodes = graph.nodes;
+		this.edges = graph.edges;
 	}
 	
 	public void addNode(Node node) {

@@ -1,9 +1,11 @@
 package fi.graphsheets.graphelements;
 
 import java.awt.Rectangle;
+import java.io.Serializable;
 
-public class Node {
+public class Node implements Serializable{
 	
+	private static final long serialVersionUID = -8883714416725612204L;
 	private int x;
     private int y;
     private int width = 1;

@@ -1,7 +1,10 @@
 package fi.graphsheets.graphelements;
 
-public class Edge {
+import java.io.Serializable;
+
+public class Edge implements Serializable{
 	
+	private static final long serialVersionUID = 133461738167404297L;
 	private Node start;
 	private Node end;
 	private String name;
