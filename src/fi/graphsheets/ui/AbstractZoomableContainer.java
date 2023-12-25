@@ -106,6 +106,14 @@ public abstract class AbstractZoomableContainer extends JComponent {
 		}
 	}
 	
+	public void convertScaleFromScreen(Point point) {
+		try {
+			scaleTransform.createInverse().transform(point, point);
+		} catch (NoninvertibleTransformException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void addZoomTransform(AffineTransform zoomTransform) {
 		this.prevScaleTransform = zoomTransform;
 		if(zoomTransform == null) return;

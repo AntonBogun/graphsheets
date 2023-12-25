@@ -122,9 +122,11 @@ public class GSTextArea extends JTextArea implements IZoomableComponent {
 					if (getClientProperty("node") instanceof Node node) {
 						MouseEvent e1 = SwingUtilities.convertMouseEvent((Component) e.getSource(), e, getParent());
 						Point p = e1.getPoint();
+//						System.out.println(p);
 						((AbstractZoomableContainer)getParent()).convertFromScreen(p);
-						node.setX(e1.getX());
-						node.setY(e1.getY());
+//						System.out.println(p);
+						node.setX(p.x);
+						node.setY(p.y);
 						((AbstractZoomableContainer) getParent()).forceRepaint();
 					}
 				}

@@ -40,41 +40,41 @@ public class Main{
 		}
 //		
 		Graph graph = new Graph(nodes, edges);
+		
+		ArrayList<Node> nodes1 = new ArrayList<Node>();
+		ArrayList<Edge> edges1 = new ArrayList<Edge>();
+		
+		//Nodes in a galaxy formation
+		for (int i = 20; i < 1000; i++) {
+			nodes1.add(new Node( 100000/2 + (int) (Math.cos(i / 10.0) * i * 100.0),  100000/2 + (int) (Math.sin(i / 10.0) * i * 100.0),
+					(int) (100), (int) (100), i, new Cell.Atomic.TextCell("ab")));
+		}
+		
+		nodes1.add(new Node(100000/2, 100000/2, 100, 100, 1, new Cell.GraphCell(graph)));
+		
+		Graph graph1 = new Graph(nodes1, edges1);
+
+		ArrayList<Node> nodes2 = new ArrayList<Node>();
+		ArrayList<Edge> edges2 = new ArrayList<Edge>();
+		
+		//nodes1.add(new Node(0,0,100,100,0, new Cell.SheetCell(new Sheet(cells, 1, 1))));
+		
+		for (int i = 20; i < 10020; i++) {
+			nodes2.add(new Node(0 + (int) (Math.cos(i / 10.0) * i * 100.0), 0 + (int) (Math.sin(i / 10.0) * i * 100.0),
+					(int) (100), (int) (100), i, new Cell.Atomic.TextCell("A")));
+		}
+		
+		nodes2.add(new Node(0, 0, 100, 100, 1000000, new Cell.GraphCell(graph1)));
+		
+		Graph graph2 = new Graph(nodes2, edges2);
 //		
-//		ArrayList<Node> nodes1 = new ArrayList<Node>();
-//		ArrayList<Edge> edges1 = new ArrayList<Edge>();
-//		
-//		//Nodes in a galaxy formation
-//		for (int i = 20; i < 1000; i++) {
-//			nodes1.add(new Node( 100000/2 + (int) (Math.cos(i / 10.0) * i * 100.0),  100000/2 + (int) (Math.sin(i / 10.0) * i * 100.0),
-//					(int) (100), (int) (100), i, new Cell.Atomic.TextCell("ab")));
-//		}
-//		
-//		nodes1.add(new Node(100000/2, 100000/2, 100, 100, 1, new Cell.GraphCell(graph)));
-//		
-//		Graph graph1 = new Graph(nodes1, edges1);
-//
-//		ArrayList<Node> nodes2 = new ArrayList<Node>();
-//		ArrayList<Edge> edges2 = new ArrayList<Edge>();
-//		
-//		//nodes1.add(new Node(0,0,100,100,0, new Cell.SheetCell(new Sheet(cells, 1, 1))));
-//		
-//		for (int i = 20; i < 10020; i++) {
-//			nodes2.add(new Node(0 + (int) (Math.cos(i / 10.0) * i * 100.0), 0 + (int) (Math.sin(i / 10.0) * i * 100.0),
-//					(int) (100), (int) (100), i, new Cell.Atomic.TextCell("A")));
-//		}
-//		
-//		nodes2.add(new Node(0, 0, 100, 100, 1000000, new Cell.GraphCell(graph1)));
-//		
-//		Graph graph2 = new Graph(nodes2, edges2);
-//		
-		JLayer<? extends AbstractZoomableContainer> layer = GraphContainerFactory.createZoomableGraphContainer(graph, true);
+		JLayer<? extends AbstractZoomableContainer> layer = GraphContainerFactory.createZoomableGraphContainer(graph2, true);
 //		
 //		String[] names = Stream.generate(() -> {return UUID.randomUUID().toString();}).limit(sheet1.getCells().length).toArray(String[]::new);
 		
 //		JTable table = new JTable(sheet1.getCells(), names);
 		//Add menu bar
-		GlobalState.initaliseState(frame, graph);
+		GlobalState.initaliseState(frame, graph2);
 		frame.setJMenuBar(new GSMenu());
 		frame.add(layer);
 		frame.setSize(1000, 1000);
