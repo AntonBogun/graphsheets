@@ -34,6 +34,7 @@ public class GlobalState {
 	private volatile static boolean addEdge;
 	private volatile static boolean addImage;
 	public volatile static BufferedImage clipboardImage;
+	public volatile static Node firstEdgeNode;
 	public static synchronized void initaliseState(JFrame frame, Graph rootGraph) {
 		GlobalState.frame = frame;
 		GlobalState.rootGraph = rootGraph;
@@ -67,6 +68,7 @@ public class GlobalState {
 		addText = false;
 		addGraph = false;
 		addImage = false;
+		addEdge = false;
 		frame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 	}
 	

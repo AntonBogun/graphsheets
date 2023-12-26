@@ -1,6 +1,7 @@
 package fi.graphsheets.ui;
 
 import java.awt.AWTEvent;
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -123,7 +124,23 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 		
 		if(e.getID() != MouseEvent.MOUSE_PRESSED) {e.consume(); return;}
 		
-		
+		if(e.getSource() instanceof IZoomableComponent) {
+			if (SwingUtilities.isLeftMouseButton(e) && GlobalState.isAddEdge()) {
+				Point point = e.getPoint();
+				JComponent component = (JComponent) e.getSource();
+				if(component.getClientProperty("node") instanceof Node node) {
+					if(GlobalState.firstEdgeNode == null) {
+						GlobalState.firstEdgeNode = node;
+					} else {
+						GraphContainerFactory.addNewEdge(l.getView(), GlobalState.firstEdgeNode, node);
+						GlobalState.firstEdgeNode = null;
+						GlobalState.clearAdd();
+					}
+				}
+				e.consume();
+				return;
+			}
+		}
 		
 		if (!GlobalState.shouldProcessAddMouseEvents()) {
 			return;

@@ -22,6 +22,12 @@ public class GSMenu extends JMenuBar{
 			addGraph.setMnemonic(KeyEvent.VK_G);
 			addGraph.addActionListener((e)->{GlobalState.setAddGraph();});
 		addMenu.add(addGraph);
+		
+
+		JMenuItem addEdge = new JMenuItem("Edge");
+			addEdge.setMnemonic(KeyEvent.VK_E);
+			addEdge.addActionListener((e)->{GlobalState.setAddEdge();});
+			addMenu.add(addEdge);
 			
 //			addMenu.add();
 //			addMenu.add(new JMenuItem("Sheet"));
@@ -40,6 +46,9 @@ public class GSMenu extends JMenuBar{
 			addImage.addActionListener((e)->{GlobalState.addImageFromClipboard();});
 		
 		addMenu.add(addImage);
+		
+			
+		
 			
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic(KeyEvent.VK_F);

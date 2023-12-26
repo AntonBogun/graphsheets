@@ -1,10 +1,13 @@
 package fi.graphsheets.ui.graph;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
@@ -58,6 +61,14 @@ public class GraphContainerFactory {
 			gcontainer.repaint();
 		} else {
 			throw new IllegalArgumentException("Container is not a GraphContainer");
+		}
+	}
+	
+	public static void addNewEdge(AbstractZoomableContainer view, Node firstEdgeNode, Node node) {
+		if(view instanceof GraphContainer gcontainer) {
+			gcontainer.graph.addEdge(new Edge(firstEdgeNode, node, ""));
+			gcontainer.doLayout();
+			gcontainer.repaint();
 		}
 	}
 	
@@ -162,6 +173,8 @@ public class GraphContainerFactory {
 		
 		public void paint(Graphics g) {
 			//draw arrows for edges
+			Graphics2D g2d = (Graphics2D) g;
+			Stroke defaultStroke = g2d.getStroke();
 			g.setColor(Color.white);
 			for (Edge edge : graph.getEdges()) {
 				Point start = edge.getStart().getCenter();
@@ -169,7 +182,11 @@ public class GraphContainerFactory {
 				this.getZoomTransform().transform(start, start);
 				this.getZoomTransform().transform(end, end);
 				g.drawLine(start.x, start.y, end.x, end.y);
+				g2d.setStroke(new BasicStroke(2));
+				g2d.drawLine((start.x+3*end.x)/4, (start.y+3*end.y)/4, end.x, end.y);
+				g2d.setStroke(defaultStroke);
 			}
+			g.setColor(Color.black);
 			super.paint(g);
 			
 		}
@@ -182,4 +199,7 @@ public class GraphContainerFactory {
 //		}
 
 	}
+
+
+	
 }
