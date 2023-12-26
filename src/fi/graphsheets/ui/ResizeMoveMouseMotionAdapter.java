@@ -31,7 +31,7 @@ public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
 			source.setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
 		} else if (e.getY() > source.getHeight() - 10) {
 			source.setCursor(Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR));
-		} else if(GlobalState.isAddGraph() || GlobalState.isAddText()){
+		} else if(GlobalState.shouldProcessAddMouseEvents()){
 			source.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 		} else {
 			source.setCursor(Cursor.getPredefinedCursor(defaultCursor));

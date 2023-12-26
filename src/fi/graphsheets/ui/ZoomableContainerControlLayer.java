@@ -120,12 +120,28 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 	}
 	
 	public void processMouseEvent(MouseEvent e, JLayer<? extends AbstractZoomableContainer> l) {
-		if (!GlobalState.isAddText() && !GlobalState.isAddGraph()) {
+		
+		if(e.getID() != MouseEvent.MOUSE_PRESSED) {e.consume(); return;}
+		
+		
+		
+		if (!GlobalState.shouldProcessAddMouseEvents()) {
 			return;
 		}
 
 //		System.out.println(e.getSource());
-		if((e.getSource()!=l.getView() && e.getSource()!=l) || e.getID() != MouseEvent.MOUSE_PRESSED) {e.consume(); return;}
+		if((e.getSource()!=l.getView() && e.getSource()!=l)) {e.consume(); return;}
+		
+		if (SwingUtilities.isLeftMouseButton(e) && GlobalState.isAddImage()) {
+			Point point = e.getPoint();
+			l.getView().convertFromScreen(point);
+			GraphContainerFactory.addNewElement(l.getView(), point, GlobalState.clipboardImage.getWidth(), GlobalState.clipboardImage.getHeight(), new Cell.Atomic.ImageCell(GlobalState.clipboardImage));
+			GlobalState.clearAdd();
+			GlobalState.clearClipboardImage();
+			e.consume();
+			return;
+		}
+		
 		
 		if (SwingUtilities.isLeftMouseButton(e) && GlobalState.isAddGraph()) {
 			Point point = e.getPoint();

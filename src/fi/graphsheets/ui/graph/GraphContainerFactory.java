@@ -3,8 +3,10 @@ package fi.graphsheets.ui.graph;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JComponent;
 import javax.swing.JLayer;
@@ -19,6 +21,7 @@ import fi.graphsheets.graphelements.Sheet;
 import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSRepaintManager;
 import fi.graphsheets.ui.ZoomableContainerControlLayer;
+import fi.graphsheets.ui.atomic.GSImage;
 import fi.graphsheets.ui.atomic.GSTextArea;
 import fi.graphsheets.ui.sheet.SheetContainerFactory;
 
@@ -108,6 +111,13 @@ public class GraphContainerFactory {
 				return sheetContainer;
 			}
 			
+			case Cell.Atomic.ImageCell(Image image) -> {
+				GSImage im = new GSImage((BufferedImage)image);
+				im.putClientProperty("node", node);
+				add(im);
+				return im;
+			}
+			
 			default -> throw new IllegalArgumentException("Unexpected value: " + node.getCell());
 			
 		
@@ -151,7 +161,6 @@ public class GraphContainerFactory {
 		}
 		
 		public void paint(Graphics g) {
-			super.paint(g);
 			//draw arrows for edges
 			g.setColor(Color.white);
 			for (Edge edge : graph.getEdges()) {
@@ -161,6 +170,7 @@ public class GraphContainerFactory {
 				this.getZoomTransform().transform(end, end);
 				g.drawLine(start.x, start.y, end.x, end.y);
 			}
+			super.paint(g);
 			
 		}
 		

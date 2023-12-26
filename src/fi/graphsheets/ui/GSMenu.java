@@ -34,6 +34,13 @@ public class GSMenu extends JMenuBar{
 //			atomicAddMenu.add(addText);	
 		addMenu.add(addText);
 		
+
+			JMenuItem addImage = new JMenuItem("Image From Clipboard");
+			addImage.setMnemonic(KeyEvent.VK_I);
+			addImage.addActionListener((e)->{GlobalState.addImageFromClipboard();});
+		
+		addMenu.add(addImage);
+			
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic(KeyEvent.VK_F);
 		
