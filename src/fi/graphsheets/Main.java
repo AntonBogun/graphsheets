@@ -32,12 +32,18 @@ public class Main{
 		
 		ArrayList<Node> nodes = new ArrayList<Node>();
 		ArrayList<Edge> edges = new ArrayList<Edge>();
-////		
-////		//Nodes in a galaxy formation
-//		for (int i = 0; i < 1000; i++) {
-//			nodes.add(new Node( 100000/2 + (int) (Math.cos(i / 10.0) * i * 100.0), 100000/2 + (int) (Math.sin(i / 10.0) * i * 100.0),
-//					(int) (100), (int) (100), i, new Cell.Atomic.TextCell("ab")));
-//		}
+//		
+//		//Nodes in a galaxy formation
+		for (int i = 0; i < 1000; i++) {
+			nodes.add(new Node( 100000/2 + (int) (Math.cos(i / 10.0) * i * 100.0), 100000/2 + (int) (Math.sin(i / 10.0) * i * 100.0),
+					(int) (100), (int) (100), i, new Cell.Atomic.TextCell("ab")));
+		}
+		//add edges between them
+		for (int i = 0; i < nodes.size(); i++) {
+			edges.add(new Edge(nodes.get(i), nodes.get((i + 1) % nodes.size()), ""));
+		}
+		
+		
 ////		
 		Graph graph = new Graph(nodes, edges);
 //		

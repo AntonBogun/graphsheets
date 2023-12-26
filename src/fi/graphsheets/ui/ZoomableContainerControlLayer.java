@@ -124,7 +124,7 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 			return;
 		}
 
-		System.out.println(e.getSource());
+//		System.out.println(e.getSource());
 		if((e.getSource()!=l.getView() && e.getSource()!=l) || e.getID() != MouseEvent.MOUSE_PRESSED) {e.consume(); return;}
 		
 		if (SwingUtilities.isLeftMouseButton(e) && GlobalState.isAddGraph()) {

@@ -1,5 +1,6 @@
 package fi.graphsheets.graphelements;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.Serializable;
 
@@ -79,6 +80,11 @@ public class Node implements Serializable{
 	public void setHeight(int height) {
 		this.height = height;
 		
+	}
+	
+	public Point getCenter() {
+		return new Point(x + width/2, y + height/2);
+    
 	}
 	
 }

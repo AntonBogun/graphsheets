@@ -1,23 +1,23 @@
 package fi.graphsheets.ui.graph;
 
+import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLayer;
 import javax.swing.RepaintManager;
-import javax.swing.border.BevelBorder;
 import javax.swing.plaf.LayerUI;
 
 import fi.graphsheets.graphelements.Cell;
+import fi.graphsheets.graphelements.Edge;
 import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet;
 import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSRepaintManager;
-import fi.graphsheets.ui.ResizeMoveMouseMotionAdapter;
 import fi.graphsheets.ui.ZoomableContainerControlLayer;
 import fi.graphsheets.ui.atomic.GSTextArea;
 import fi.graphsheets.ui.sheet.SheetContainerFactory;
@@ -150,6 +150,19 @@ public class GraphContainerFactory {
 			return Cursor.DEFAULT_CURSOR;
 		}
 		
+		public void paint(Graphics g) {
+			super.paint(g);
+			//draw arrows for edges
+			g.setColor(Color.white);
+			for (Edge edge : graph.getEdges()) {
+				Point start = edge.getStart().getCenter();
+				Point end = edge.getEnd().getCenter();
+				this.getZoomTransform().transform(start, start);
+				this.getZoomTransform().transform(end, end);
+				g.drawLine(start.x, start.y, end.x, end.y);
+			}
+			
+		}
 		
 
 //		@Override
