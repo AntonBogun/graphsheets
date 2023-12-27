@@ -76,6 +76,7 @@ public class SheetContainerFactory {
 			}
 			sheetcontainer.sheet.sheetChanged = true;
 			sheetcontainer.sheet.updateCellsLayout();
+			sheetcontainer.needRender = true;
 			((AbstractZoomableContainer) sheetcontainer.getParent().getParent()).forceRepaint();
 		}
 	}
