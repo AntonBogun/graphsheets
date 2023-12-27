@@ -1,7 +1,6 @@
 package fi.graphsheets.ui;
 
 import java.awt.AWTEvent;
-import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -13,6 +12,7 @@ import javax.swing.JLayer;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.LayerUI;
 
+import fi.graphsheets.SerializableImage;
 import fi.graphsheets.graphelements.Cell;
 import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
@@ -152,9 +152,9 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 		if (SwingUtilities.isLeftMouseButton(e) && GlobalState.isAddImage()) {
 			Point point = e.getPoint();
 			l.getView().convertFromScreen(point);
-			GraphContainerFactory.addNewElement(l.getView(), point, GlobalState.clipboardImage.getWidth(), GlobalState.clipboardImage.getHeight(), new Cell.Atomic.ImageCell(GlobalState.clipboardImage));
+			GraphContainerFactory.addNewElement(l.getView(), point, GlobalState.clipboardImage.getWidth(), GlobalState.clipboardImage.getHeight(), new Cell.Atomic.ImageCell(new SerializableImage(GlobalState.clipboardImage)));
 			GlobalState.clearAdd();
-			GlobalState.clearClipboardImage();
+//			GlobalState.clearClipboardImage();
 			e.consume();
 			return;
 		}
@@ -185,6 +185,11 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 		if(e.getID() != java.awt.event.KeyEvent.KEY_PRESSED) {
 			return;
 		}
+		
+		if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+			GlobalState.clearAdd();
+		}
+		
 		if (e.getKeyCode() == 107) {
 			l.getView().zoomFrom(new Point(l.getWidth() / 2, l.getHeight() / 2), 2);
 			l.requestFocus();

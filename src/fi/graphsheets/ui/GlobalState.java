@@ -69,6 +69,8 @@ public class GlobalState {
 		addGraph = false;
 		addImage = false;
 		addEdge = false;
+		firstEdgeNode = null;
+		clipboardImage = null;
 		frame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 	}
 	
@@ -183,10 +185,10 @@ public class GlobalState {
 	public static BufferedImage getClipboardImage() {
 		return clipboardImage;
 	}
-	
-	public static void clearClipboardImage() {
-		clipboardImage = null;
-	}
+//	
+//	public static void clearClipboardImage() {
+//		clipboardImage = null;
+//	}
 	
 	public static void setAddImage() {
 		addImage = true;

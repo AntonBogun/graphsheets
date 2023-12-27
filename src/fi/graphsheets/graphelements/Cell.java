@@ -11,10 +11,12 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
+import fi.graphsheets.SerializableImage;
+
 public sealed interface Cell {
 	
 	public sealed interface Atomic extends Cell{
-		public record ImageCell(Image image) implements Atomic, Serializable {}
+		public record ImageCell(SerializableImage image) implements Atomic, Serializable {}
 
 		public record TextCell(String value) implements Atomic, Serializable {}
 	}

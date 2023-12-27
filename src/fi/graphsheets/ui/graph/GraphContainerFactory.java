@@ -5,7 +5,6 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
@@ -16,6 +15,7 @@ import javax.swing.JLayer;
 import javax.swing.RepaintManager;
 import javax.swing.plaf.LayerUI;
 
+import fi.graphsheets.SerializableImage;
 import fi.graphsheets.graphelements.Cell;
 import fi.graphsheets.graphelements.Edge;
 import fi.graphsheets.graphelements.Graph;
@@ -122,8 +122,8 @@ public class GraphContainerFactory {
 				return sheetContainer;
 			}
 			
-			case Cell.Atomic.ImageCell(Image image) -> {
-				GSImage im = new GSImage((BufferedImage)image);
+			case Cell.Atomic.ImageCell(SerializableImage serial) -> {
+				GSImage im = new GSImage(serial.getBufferedImage());
 				im.putClientProperty("node", node);
 				add(im);
 				return im;
