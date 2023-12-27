@@ -13,6 +13,7 @@ import javax.swing.SwingUtilities;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet.SheetEntry;
 import fi.graphsheets.ui.atomic.GSTextArea;
+import fi.graphsheets.ui.sheet.SheetContainerFactory;
 
 public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
 	
@@ -62,7 +63,7 @@ public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
 					if(graph) {
 						node.setWidth(p.x);
 					} else {
-						entry.setWidth(p.x);
+						SheetContainerFactory.updateSizeOfCell(source, entry.x(), entry.y(), p.x, true);
 					}
 					parent.forceRepaint();
 				}
@@ -72,7 +73,7 @@ public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
 					if (graph) {
 						node.setHeight(p.y);
 					} else {
-						entry.setHeight(p.y);
+						SheetContainerFactory.updateSizeOfCell(source, entry.x(), entry.y(), p.y, false);
 					}
 					parent.forceRepaint();
 				}
@@ -86,8 +87,8 @@ public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
 						node.setWidth(p.x);
 						node.setHeight(p.y);
 					} else {
-						entry.setWidth(p.x);
-						entry.setHeight(p.y);
+						SheetContainerFactory.updateSizeOfCell(source, entry.x(), entry.y(), p.x, true);
+						SheetContainerFactory.updateSizeOfCell(source, entry.x(), entry.y(), p.y, false);
 					}
 					parent.forceRepaint();
 				}
@@ -104,8 +105,6 @@ public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
 				node.setX(p.x);
 				node.setY(p.y);
 			} else {
-				entry.setX(p.x);
-				entry.setY(p.y);
 			}
 			parent.forceRepaint();
 			break;

@@ -1,8 +1,8 @@
 package fi.graphsheets.graphelements;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -94,9 +94,10 @@ public class Sheet implements Iterable<Sheet.SheetEntry>{
 	private List<SheetEntry> entries = new ArrayList<SheetEntry>();
 	private int width;
 	private int height;
-	private ArrayList<Integer> layoutWidths;
-	private ArrayList<Integer> layoutHeights;
+	public ArrayList<Integer> layoutWidths;
+	public ArrayList<Integer> layoutHeights;
 	public boolean sheetChanged;
+	public boolean cellResized;
 	@SuppressWarnings("unchecked")
 	public <T> Sheet(List<T> list, int width, int height) {
 		if(list == null) {
@@ -143,6 +144,7 @@ public class Sheet implements Iterable<Sheet.SheetEntry>{
 	public void calculateCellsDimensions() {
 		ArrayList<Integer> layoutWidths1 = new ArrayList<Integer>();
 		ArrayList<Integer> layoutHeights1 = new ArrayList<Integer>();
+
 		for (int i = 0; i < width; i++) {
 			int maxWidth = 0;
 			for (int j = 0; j < height; j++) {
@@ -167,11 +169,10 @@ public class Sheet implements Iterable<Sheet.SheetEntry>{
 		sheetChanged = !layoutWidths.equals(layoutWidths1) || !layoutHeights.equals(layoutHeights1);
 		layoutWidths = layoutWidths1;
 		layoutHeights = layoutHeights1;
+		
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void updateCellsLayout() {
-		calculateCellsDimensions();
 		ArrayList<Integer> layoutWidths1 = new ArrayList<Integer>();
 		layoutWidths1.add(0);
 		layoutWidths1.addAll(layoutWidths);
@@ -182,6 +183,7 @@ public class Sheet implements Iterable<Sheet.SheetEntry>{
 		for(int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
 				get(j, i).setDisplayX(xPositions.get(j));
+				get(j, i).setWidth(layoutWidths.get(j));
 			}
 		}
 		
@@ -194,8 +196,9 @@ public class Sheet implements Iterable<Sheet.SheetEntry>{
 		yPositions = Arrays.stream(layourHeights1arr).boxed().collect(Collectors.toList());
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
-				System.out.println(yPositions.get(j));
+//				System.out.println(layoutHeights.get(j));
 				get(i, j).setDisplayY(yPositions.get(j));
+				get(i, j).setHeight(layoutHeights.get(j));
 			}
 		}
 		

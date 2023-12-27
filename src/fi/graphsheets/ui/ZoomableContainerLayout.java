@@ -13,7 +13,7 @@ public abstract class ZoomableContainerLayout {
     private int numComponents = 0;
 	public void layoutZoomableContainer(Container parent) {
 		if(parent instanceof AbstractZoomableContainer container) {
-    		if(container.getZoomRegion() == previousBounds && parent.getComponentCount() == numComponents && !container.forcedRepaint) { 
+    		if(container.getZoomRegion() == previousBounds && parent.getComponentCount() == numComponents && !container.needRender) { 
     			return;
     		}
     		((GSRepaintManager)RepaintManager.currentManager(container)).setPainting(false);
@@ -31,7 +31,7 @@ public abstract class ZoomableContainerLayout {
 			});
 	    	previousBounds = container.getZoomRegion();
 	    	numComponents = parent.getComponentCount();
-	    	container.forcedRepaint = false;
+	    	container.needRender = false;
     	}
 	}
 	

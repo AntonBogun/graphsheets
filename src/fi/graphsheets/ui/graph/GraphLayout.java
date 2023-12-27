@@ -12,6 +12,7 @@ import javax.swing.JLayer;
 
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.ui.AbstractZoomableContainer;
+import fi.graphsheets.ui.GlobalState;
 import fi.graphsheets.ui.IZoomableComponent;
 import fi.graphsheets.ui.ZoomableContainerLayout;
 import fi.graphsheets.ui.sheet.SheetContainerFactory;
@@ -39,19 +40,18 @@ public class GraphLayout extends ZoomableContainerLayout implements LayoutManage
     }
     
 	public void layoutComponent(Component component, AbstractZoomableContainer container, boolean newZoom) {
-		
+
 		if(component instanceof JComponent jcomponent && jcomponent.getClientProperty("node") instanceof Node node) {
 			
 			Rectangle defaultBounds = new Rectangle(node.getX(), node.getY(), node.getWidth(), node.getHeight());
 			component.setBounds(container.getZoomTransform().createTransformedShape(defaultBounds).getBounds());
 			
-			
 			if(jcomponent instanceof IZoomableComponent zcomponent) {
 				zcomponent.setZoomTransform(container.getZoomTransform());
-			} else if(jcomponent instanceof JLayer jlayer && jlayer.getView() instanceof AbstractZoomableContainer subcontainer && (newZoom || subcontainer.firstRender)) {
+			} else if(jcomponent instanceof JLayer jlayer && jlayer.getView() instanceof AbstractZoomableContainer subcontainer && (newZoom || subcontainer.needRender)) {
 				SheetContainerFactory.resizeIfNeeded(subcontainer);
-				subcontainer.addZoomTransform(subcontainer.firstRender ? AffineTransform.getRotateInstance(0) : container.getPrevScaleTransform());
-				if(subcontainer.firstRender) subcontainer.firstRender = false;
+				subcontainer.addZoomTransform(subcontainer.needRender ? AffineTransform.getRotateInstance(0) : container.getPrevScaleTransform());
+				if(subcontainer.needRender) { subcontainer.needRender = false; }
 				
 			}
 			

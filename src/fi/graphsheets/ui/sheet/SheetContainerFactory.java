@@ -11,10 +11,12 @@ import javax.swing.plaf.LayerUI;
 
 import fi.graphsheets.graphelements.Cell;
 import fi.graphsheets.graphelements.Graph;
+import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet;
 import fi.graphsheets.graphelements.Sheet.SheetEntry;
 import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSRepaintManager;
+import fi.graphsheets.ui.GlobalState;
 import fi.graphsheets.ui.ZoomableContainerControlLayer;
 import fi.graphsheets.ui.atomic.GSTextArea;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
@@ -42,6 +44,7 @@ public class SheetContainerFactory {
 	}
 	
 	public static void updateSheet(Component sheetcontainer) {
+        ((SheetContainer)sheetcontainer).sheet.calculateCellsDimensions();
         ((SheetContainer)sheetcontainer).sheet.updateCellsLayout();
     }
 	
@@ -51,8 +54,29 @@ public class SheetContainerFactory {
 	
 	public static void resizeIfNeeded(JComponent component) {
 		if (component instanceof SheetContainer sheetcontainer && isSheetChanged(sheetcontainer)) {
-			sheetcontainer.setBounds(sheetcontainer.getX(), sheetcontainer.getY(), ((SheetContainer) sheetcontainer).sheet.totalWidth(), ((SheetContainer) sheetcontainer).sheet.totalHeight());
-			((SheetContainer) sheetcontainer).sheet.sheetChanged = false;
+			System.out.println(((SheetContainer) sheetcontainer).sheet.totalWidth());
+//			sheetcontainer.setBounds(sheetcontainer.getX(), sheetcontainer.getY(), ((SheetContainer) sheetcontainer).sheet.totalWidth(), ((SheetContainer) sheetcontainer).sheet.totalHeight());
+			//XXX wont work for nested sheets
+			if((Node)((JComponent) sheetcontainer.getParent()).getClientProperty("node") instanceof Node node) {
+				node.setWidth(((SheetContainer) sheetcontainer).sheet.totalWidth());
+				node.setHeight(((SheetContainer) sheetcontainer).sheet.totalHeight());
+			}
+			sheetcontainer.sheet.sheetChanged = false;
+		}
+	}
+	
+	public static void updateSizeOfCell(JComponent component, int x, int y, int newdimension, boolean width) {
+//		System.out.println(x + " " + newdimension);
+		if(component.getParent() instanceof SheetContainer sheetcontainer) {
+//			System.out.println(sheetcontainer.sheet.layoutWidths);
+			if(width) {
+				sheetcontainer.sheet.layoutWidths.set(x, newdimension);
+			} else {
+				sheetcontainer.sheet.layoutHeights.set(y, newdimension);
+			}
+			sheetcontainer.sheet.sheetChanged = true;
+			sheetcontainer.sheet.updateCellsLayout();
+			((AbstractZoomableContainer) sheetcontainer.getParent().getParent()).forceRepaint();
 		}
 	}
 	
