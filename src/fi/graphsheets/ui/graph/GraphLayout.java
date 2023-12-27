@@ -5,6 +5,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 
 import javax.swing.JComponent;
 import javax.swing.JLayer;
@@ -13,6 +14,7 @@ import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.IZoomableComponent;
 import fi.graphsheets.ui.ZoomableContainerLayout;
+import fi.graphsheets.ui.sheet.SheetContainerFactory;
 
 public class GraphLayout extends ZoomableContainerLayout implements LayoutManager {
 	
@@ -46,8 +48,10 @@ public class GraphLayout extends ZoomableContainerLayout implements LayoutManage
 			
 			if(jcomponent instanceof IZoomableComponent zcomponent) {
 				zcomponent.setZoomTransform(container.getZoomTransform());
-			} else if(jcomponent instanceof JLayer jlayer && jlayer.getView() instanceof AbstractZoomableContainer subcontainer && newZoom) {
-				subcontainer.addZoomTransform(container.getPrevScaleTransform());
+			} else if(jcomponent instanceof JLayer jlayer && jlayer.getView() instanceof AbstractZoomableContainer subcontainer && (newZoom || subcontainer.firstRender)) {
+				SheetContainerFactory.resizeIfNeeded(subcontainer);
+				subcontainer.addZoomTransform(subcontainer.firstRender ? AffineTransform.getRotateInstance(0) : container.getPrevScaleTransform());
+				if(subcontainer.firstRender) subcontainer.firstRender = false;
 				
 			}
 			

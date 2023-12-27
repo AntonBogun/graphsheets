@@ -15,6 +15,7 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	private Rectangle zoomRegion;
 	private AffineTransform zoomTransform = AffineTransform.getScaleInstance(1, 1);
 	private AffineTransform scaleTransform = AffineTransform.getScaleInstance(1, 1);
+	public boolean firstRender = true;
 	
 	public abstract int getDefaultCursor();
 //	

@@ -57,8 +57,7 @@ public class GraphContainerFactory {
 			Node node = new Node(point.x, point.y, width, height, 1, cell);
 			gcontainer.initialiseNode(node);
 			gcontainer.graph.addNode(node);
-			gcontainer.doLayout();
-			gcontainer.repaint();
+			gcontainer.forceRepaint();
 		} else {
 			throw new IllegalArgumentException("Container is not a GraphContainer");
 		}

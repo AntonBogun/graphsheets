@@ -59,6 +59,7 @@ public class GlobalState {
 	}
 	
 	private volatile static boolean addText;
+	private static boolean addSheet;
 	public static synchronized void setAddText() {
 		addText = true;
 		frame.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
@@ -69,6 +70,7 @@ public class GlobalState {
 		addGraph = false;
 		addImage = false;
 		addEdge = false;
+		addSheet = false;
 		firstEdgeNode = null;
 		clipboardImage = null;
 		frame.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -76,6 +78,11 @@ public class GlobalState {
 	
 	public static synchronized boolean isAddText() {
 		return addText;
+	}
+	
+	public static void setAddSheet() {
+		addSheet = true;
+		frame.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 	}
 	
 	public static synchronized void saveFile() throws IOException {
@@ -203,7 +210,13 @@ public class GlobalState {
 	}
 
 	public static boolean shouldProcessAddMouseEvents() {
-		return isAddEdge() || isAddGraph() || isAddImage() || isAddText();
+		return isAddEdge() || isAddGraph() || isAddImage() || isAddText() || isAddSheet();
 	}
+
+	public static boolean isAddSheet() {
+		return addSheet;
+	}
+	
+
 
 }

@@ -1,8 +1,10 @@
 package fi.graphsheets.ui.sheet;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.geom.AffineTransform;
 
+import javax.swing.JComponent;
 import javax.swing.JLayer;
 import javax.swing.RepaintManager;
 import javax.swing.plaf.LayerUI;
@@ -39,6 +41,20 @@ public class SheetContainerFactory {
 		return layer;
 	}
 	
+	public static void updateSheet(Component sheetcontainer) {
+        ((SheetContainer)sheetcontainer).sheet.updateCellsLayout();
+    }
+	
+	public static boolean isSheetChanged(Component sheetcontainer) {
+		return ((SheetContainer) sheetcontainer).sheet.sheetChanged;
+	}
+	
+	public static void resizeIfNeeded(JComponent component) {
+		if (component instanceof SheetContainer sheetcontainer && isSheetChanged(sheetcontainer)) {
+			sheetcontainer.setBounds(sheetcontainer.getX(), sheetcontainer.getY(), ((SheetContainer) sheetcontainer).sheet.totalWidth(), ((SheetContainer) sheetcontainer).sheet.totalHeight());
+			((SheetContainer) sheetcontainer).sheet.sheetChanged = false;
+		}
+	}
 	
 	@SuppressWarnings("serial")
 	private class SheetContainer extends AbstractZoomableContainer{

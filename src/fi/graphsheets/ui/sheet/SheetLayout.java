@@ -5,6 +5,7 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
 
 import javax.swing.JComponent;
 import javax.swing.JLayer;
@@ -44,17 +45,19 @@ public class SheetLayout extends ZoomableContainerLayout implements LayoutManage
 
 	@Override
 	public void layoutComponent(Component component, AbstractZoomableContainer container, boolean newZoom) {
+		SheetContainerFactory.updateSheet(component.getParent());
 		if(component instanceof JComponent jcomponent && jcomponent.getClientProperty("entry") instanceof SheetEntry entry) {
 			
-
-			Rectangle defaultBounds = new Rectangle(entry.x() * 100, entry.y() * 100, 100, 100);
+			Rectangle defaultBounds = new Rectangle(entry.displayX(), entry.displayY(), entry.width(), entry.height());
 			component.setBounds(container.getZoomTransform().createTransformedShape(defaultBounds).getBounds());
 			
 			
 			if(jcomponent instanceof IZoomableComponent zcomponent) {
 				zcomponent.setZoomTransform(container.getZoomTransform());
-			} else if(jcomponent instanceof JLayer jlayer && jlayer.getView() instanceof AbstractZoomableContainer subcontainer && newZoom) {
-				subcontainer.addZoomTransform(container.getPrevScaleTransform());
+			} else if(jcomponent instanceof JLayer jlayer && jlayer.getView() instanceof AbstractZoomableContainer subcontainer  && (newZoom || subcontainer.firstRender)) {
+				SheetContainerFactory.resizeIfNeeded(subcontainer);
+				subcontainer.addZoomTransform(subcontainer.firstRender ? AffineTransform.getRotateInstance(0) : container.getPrevScaleTransform());
+				if(subcontainer.firstRender) subcontainer.firstRender = false;
 				
 			}
 			

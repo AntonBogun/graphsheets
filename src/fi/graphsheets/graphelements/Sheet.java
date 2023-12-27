@@ -1,8 +1,11 @@
 package fi.graphsheets.graphelements;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Sheet implements Iterable<Sheet.SheetEntry>{
 
@@ -93,16 +96,30 @@ public class Sheet implements Iterable<Sheet.SheetEntry>{
 	private int height;
 	private ArrayList<Integer> layoutWidths;
 	private ArrayList<Integer> layoutHeights;
+	public boolean sheetChanged;
+	@SuppressWarnings("unchecked")
 	public <T> Sheet(List<T> list, int width, int height) {
-		if(list.stream().allMatch(SheetEntry.class::isInstance)) {
+		if(list == null) {
+			for (int i = 0; i < width * height; i++) {
+				entries.add(new SheetEntry(i % width, i / width, new Cell.Atomic.TextCell("")));
+			}
+		} else if(list.stream().allMatch(SheetEntry.class::isInstance)) {
 			this.entries = (List<SheetEntry>) list;
 		} else if (list.stream().allMatch(SheetEntry.class::isInstance)) {
-			this.entries = list.stream().map((cell) -> new SheetEntry())
+			for (int i = 0; i < list.size(); i++) {
+				entries.add(new SheetEntry(i % width, i / width, (Cell) list.get(i)));
+			}
 		}
 		this.width = width;
 		this.height = height;
 		layoutWidths = new ArrayList<Integer>();
 		layoutHeights = new ArrayList<Integer>();
+		for (int i = 0; i < width; i++) {
+			layoutWidths.add(100);
+		}
+		for (int i = 0; i < height; i++) {
+			layoutHeights.add(100);
+		}
 	}
 	
 	
@@ -111,12 +128,21 @@ public class Sheet implements Iterable<Sheet.SheetEntry>{
 		this.height = 1;
 		layoutWidths = new ArrayList<Integer>();
 		layoutHeights = new ArrayList<Integer>();
-		
+		layoutWidths.add(100);
+		layoutHeights.add(100);
+	}
+	
+	public int totalWidth() {
+		return layoutWidths.stream().reduce(0, Integer::sum);
+	}
+	
+	public int totalHeight() {
+		return layoutHeights.stream().reduce(0, Integer::sum);
 	}
 	
 	public void calculateCellsDimensions() {
-		layoutWidths.clear();
-		layoutHeights.clear();
+		ArrayList<Integer> layoutWidths1 = new ArrayList<Integer>();
+		ArrayList<Integer> layoutHeights1 = new ArrayList<Integer>();
 		for (int i = 0; i < width; i++) {
 			int maxWidth = 0;
 			for (int j = 0; j < height; j++) {
@@ -125,7 +151,7 @@ public class Sheet implements Iterable<Sheet.SheetEntry>{
 					maxWidth = width;
 				}
 			}
-			layoutWidths.add(maxWidth);
+			layoutWidths1.add(maxWidth);
 		}
 		
 		for (int i = 0; i < height; i++) {
@@ -136,28 +162,60 @@ public class Sheet implements Iterable<Sheet.SheetEntry>{
 					maxHeight = height;
 				}
 			}
-			layoutHeights.add(maxHeight);
+			layoutHeights1.add(maxHeight);
 		}
+		sheetChanged = !layoutWidths.equals(layoutWidths1) || !layoutHeights.equals(layoutHeights1);
+		layoutWidths = layoutWidths1;
+		layoutHeights = layoutHeights1;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void updateCellsLayout() {
 		calculateCellsDimensions();
-		for (int i = 0; i < width; i++) {
-			int x = 0;
-			for (int j = 0; j < height; j++) {
-				get(i, j).setDisplayX(x);
-				get(i, j).setWidth(layoutWidths.get(i));
-				x += layoutWidths.get(i);
-			}
-		}
-		for (int i = 0; i < height; i++) {
-			int y = 0;
+		ArrayList<Integer> layoutWidths1 = new ArrayList<Integer>();
+		layoutWidths1.add(0);
+		layoutWidths1.addAll(layoutWidths);
+		int[] layourWidths1arr = layoutWidths1.stream().mapToInt(i -> i).toArray();
+		List<Integer> xPositions = new ArrayList<Integer>();
+		Arrays.parallelPrefix(layourWidths1arr, (a,b)->a+b);
+		xPositions = Arrays.stream(layourWidths1arr).boxed().collect(Collectors.toList());
+		for(int i = 0; i < height; i++) {
 			for (int j = 0; j < width; j++) {
-				get(j, i).setDisplayY(y);
-				get(i, j).setHeight(layoutHeights.get(i));
-				y += layoutHeights.get(i);
+				get(j, i).setDisplayX(xPositions.get(j));
 			}
 		}
+		
+		List<Integer> layoutHeights1 = new ArrayList<Integer>();
+		layoutHeights1.add(0);
+		layoutHeights1.addAll(layoutHeights);
+		int[] layourHeights1arr = layoutHeights1.stream().mapToInt(i -> i).toArray(); 
+		List<Integer> yPositions = new ArrayList<Integer>();
+		Arrays.parallelPrefix(layourHeights1arr, (a,b)->a+b);
+		yPositions = Arrays.stream(layourHeights1arr).boxed().collect(Collectors.toList());
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
+				System.out.println(yPositions.get(j));
+				get(i, j).setDisplayY(yPositions.get(j));
+			}
+		}
+		
+//		for (int i = 0; i < height; i++) {
+////			int y = 0;
+////			for (int j = 0; j < height; j++) {
+////				get(i, j).setDisplayX(x);
+////				get(i, j).setWidth(layoutWidths.get(i));
+////				y += layoutWidths.get(i);
+////			}
+//			
+//		}
+//		for (int i = 0; i < height; i++) {
+//			int x = 0;
+//			for (int j = 0; j < width; j++) {
+//				get(j, i).setDisplayX(x);
+//				get(j, i).setHeight(layoutHeights.get(i));
+//				x += layoutHeights.get(i);
+//			}
+//		}
 	}
 	
 	public SheetEntry get(int i, int j) {

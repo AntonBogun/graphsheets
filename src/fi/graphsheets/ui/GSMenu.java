@@ -23,7 +23,11 @@ public class GSMenu extends JMenuBar{
 			addGraph.addActionListener((e)->{GlobalState.setAddGraph();});
 		addMenu.add(addGraph);
 		
-
+		JMenuItem addSheet = new JMenuItem("Sheet");
+			addSheet.setMnemonic(KeyEvent.VK_S);
+			addSheet.addActionListener((e)->{GlobalState.setAddSheet();});
+		addMenu.add(addSheet);
+			
 		JMenuItem addEdge = new JMenuItem("Edge");
 			addEdge.setMnemonic(KeyEvent.VK_E);
 			addEdge.addActionListener((e)->{GlobalState.setAddEdge();});

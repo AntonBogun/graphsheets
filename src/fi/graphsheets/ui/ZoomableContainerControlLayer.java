@@ -9,6 +9,7 @@ import java.awt.geom.AffineTransform;
 
 import javax.swing.JComponent;
 import javax.swing.JLayer;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.LayerUI;
 
@@ -16,6 +17,7 @@ import fi.graphsheets.SerializableImage;
 import fi.graphsheets.graphelements.Cell;
 import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
+import fi.graphsheets.graphelements.Sheet;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
 
 @SuppressWarnings("serial")
@@ -148,6 +150,33 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 
 //		System.out.println(e.getSource());
 		if((e.getSource()!=l.getView() && e.getSource()!=l)) {e.consume(); return;}
+		
+
+		if (SwingUtilities.isLeftMouseButton(e) && GlobalState.isAddSheet()) {
+			Point point = e.getPoint();
+			l.getView().convertFromScreen(point);
+			//ask for size of sheet
+			String result = JOptionPane.showInputDialog("Enter dimensions (WxH)", "1x1");
+			if (result == null) {
+				GlobalState.clearAdd();
+				e.consume();
+				return;
+			}
+			String[] sizes = result.split("x");
+			if (sizes.length != 2) {
+				GlobalState.clearAdd();
+				e.consume();
+				return;
+			}
+			int width = Integer.parseInt(sizes[0]);
+			int height = Integer.parseInt(sizes[1]);
+			GraphContainerFactory.addNewElement(l.getView(), point, width*100, height*100,
+					new Cell.SheetCell(new Sheet(null, width, height)));
+			GlobalState.clearAdd();
+//			GlobalState.clearClipboardImage();
+			e.consume();
+			return;
+		}
 		
 		if (SwingUtilities.isLeftMouseButton(e) && GlobalState.isAddImage()) {
 			Point point = e.getPoint();
