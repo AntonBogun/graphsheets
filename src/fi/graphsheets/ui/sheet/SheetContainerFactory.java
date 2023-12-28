@@ -54,7 +54,7 @@ public class SheetContainerFactory {
 	
 	public static void resizeIfNeeded(JComponent component) {
 		if (component instanceof SheetContainer sheetcontainer && isSheetChanged(sheetcontainer)) {
-			System.out.println(((SheetContainer) sheetcontainer).sheet.totalWidth());
+//			System.out.println(((SheetContainer) sheetcontainer).sheet.totalWidth());
 //			sheetcontainer.setBounds(sheetcontainer.getX(), sheetcontainer.getY(), ((SheetContainer) sheetcontainer).sheet.totalWidth(), ((SheetContainer) sheetcontainer).sheet.totalHeight());
 			//XXX wont work for nested sheets
 			if((Node)((JComponent) sheetcontainer.getParent()).getClientProperty("node") instanceof Node node) {
@@ -91,13 +91,15 @@ public class SheetContainerFactory {
 			this.sheet = sheet;
 			this.setLayout(new SheetLayout());
 			RepaintManager.setCurrentManager(new GSRepaintManager());
-			
 		}
 		
 		public void initialiseSheet() {
+			sheet.calculateCellsDimensions();
+			sheet.updateCellsLayout();
 			for (SheetEntry entry : sheet) {
 				initialiseCell(entry);
 			}
+			
 		}
 		
 
