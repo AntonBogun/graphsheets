@@ -12,7 +12,6 @@ public class Node implements Serializable{
     private int width = 1;
     private int height = 1;
     private Cell data;
-    private transient Rectangle bounds;
     private int id;
 	public Node(int x, int y, int width, int height, int id, Cell data) {
 		this.x = x;
@@ -21,7 +20,6 @@ public class Node implements Serializable{
 		this.height = height;
 		this.id = id;
 		this.data = data;
-		this.bounds = new Rectangle(x, y, width, height);
 	}
     
     public void setCell(Cell cell) {
@@ -44,13 +42,11 @@ public class Node implements Serializable{
 
 
 	public void setX(int i) {
-		this.bounds.x = i;
 		x = i;
 		
 	}
 	
 	public void setY(int j) {
-		this.bounds.y = j;
 		y = j;
 
 	}

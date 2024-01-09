@@ -3,6 +3,7 @@ package fi.graphsheets.ui;
 import java.awt.AWTEvent;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
@@ -31,7 +32,9 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 	    //in order to allow for zooming to sub-pixel levels
 //	    
 	    l.setLayerEventMask(AWTEvent.MOUSE_WHEEL_EVENT_MASK | AWTEvent.KEY_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
-	    l.getView().addMouseMotionListener(new ResizeMoveMouseMotionAdapter());
+	    ResizeMoveMouseAdapter ma = new ResizeMoveMouseAdapter();
+//		l.getView().addMouseListener(ma);
+		l.getView().addMouseMotionListener(ma);
 	}
 	
 	public void uninstallUI(JComponent c) {
@@ -124,7 +127,7 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 	
 	public void processMouseEvent(MouseEvent e, JLayer<? extends AbstractZoomableContainer> l) {
 		
-		if(e.getID() != MouseEvent.MOUSE_PRESSED) {e.consume(); return;}
+		if(e.getID() != MouseEvent.MOUSE_PRESSED) {return;}
 		
 		if(e.getSource() instanceof IZoomableComponent) {
 			if (SwingUtilities.isLeftMouseButton(e) && GlobalState.isAddEdge()) {

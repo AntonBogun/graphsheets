@@ -39,12 +39,15 @@ public class GraphLayout extends ZoomableContainerLayout implements LayoutManage
         return null;
     }
     
+    
 	public void layoutComponent(Component component, AbstractZoomableContainer container, boolean newZoom) {
 		
 		if(component instanceof JComponent jcomponent && jcomponent.getClientProperty("node") instanceof Node node) {
 			
+			
 			Rectangle defaultBounds = new Rectangle(node.getX(), node.getY(), node.getWidth(), node.getHeight());
 			component.setBounds(container.getZoomTransform().createTransformedShape(defaultBounds).getBounds());
+			
 			
 			if(jcomponent instanceof IZoomableComponent zcomponent) {
 				zcomponent.setZoomTransform(container.getZoomTransform());

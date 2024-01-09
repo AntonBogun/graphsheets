@@ -1,15 +1,18 @@
 package fi.graphsheets.graphelements;
 
-import java.awt.Point;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Sheet implements Iterable<Sheet.SheetEntry>{
+public class Sheet implements Iterable<Sheet.SheetEntry>, Serializable{
 
-	public static class SheetEntry {
+	private static final long serialVersionUID = -3383321949446381832L;
+
+	public static class SheetEntry implements Serializable{
+		private static final long serialVersionUID = 5961394773227866778L;
 		private int x;
 		private int y;
 		private int displayX;
@@ -96,8 +99,8 @@ public class Sheet implements Iterable<Sheet.SheetEntry>{
 	private int height;
 	public ArrayList<Integer> layoutWidths;
 	public ArrayList<Integer> layoutHeights;
-	public boolean sheetChanged;
-	public boolean cellResized;
+	public transient boolean sheetChanged;
+	public transient boolean cellResized;
 	@SuppressWarnings("unchecked")
 	public <T> Sheet(List<T> list, int width, int height) {
 		if(list == null) {

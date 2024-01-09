@@ -4,18 +4,19 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.AffineTransform;
 
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.event.MouseInputAdapter;
 
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet.SheetEntry;
 import fi.graphsheets.ui.atomic.GSTextArea;
 import fi.graphsheets.ui.sheet.SheetContainerFactory;
 
-public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
+public class ResizeMoveMouseAdapter extends MouseInputAdapter {
+	boolean dragging = false;
 	
 	@Override
 	public void mouseMoved(MouseEvent e) {
@@ -46,11 +47,28 @@ public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
 			source.setCursor(Cursor.getPredefinedCursor(defaultCursor));
 		}
 	}
+	
+	
 
 	//FIXME when resizing text area to very large sized, zooming does not behave as expected (and parts of the textarea are not rendered)
+//	private MouseEvent prev;
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		int defaultCursor = -1;
 		JComponent source = (JComponent) e.getSource();
+		Point screenP = SwingUtilities.convertPoint(source, new Point(e.getX(), e.getY()), GlobalState.getRootFrame().getContentPane().getComponent(0));
+		if(source instanceof IZoomableComponent comp) defaultCursor = comp.getDefaultCursor();
+		if(source instanceof AbstractZoomableContainer comp) defaultCursor = comp.getDefaultCursor();
+//		System.out.println(e.getPoint());
+//		System.out.println(prev!=null);
+//		if(prev!=null) System.out.println(prev.getPoint());
+//		if(prev!=null && e.getPoint()==prev.getPoint()) {
+//			source.putClientProperty("ResizeMove", defaultCursor);
+//			source.setCursor(Cursor.getPredefinedCursor(defaultCursor));
+//			e.consume();
+//			return;
+//		}
+//		prev = e;
 		AffineTransform zoomTransform = getZoomTransform(source);
 		Point p = new Point((int) (e.getX()/zoomTransform.getScaleX()), (int) (e.getY()/zoomTransform.getScaleY()));
 		Node node = getNode(source);
@@ -59,6 +77,7 @@ public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
 		AbstractZoomableContainer parent = getAbstractZoomableContainer(source);
 		switch((int)source.getClientProperty("ResizeMove")) {
 			case Cursor.E_RESIZE_CURSOR:
+				System.out.println("what");
 				if((p.x<1000 || !(source instanceof GSTextArea)) && p.x>10) {
 					if(graph) {
 						node.setWidth(p.x);
@@ -109,6 +128,9 @@ public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
 			parent.forceRepaint();
 			break;
 		}
+		
+		
+		
 //		
 //		if((int)source.getClientProperty("ResizeMove") == Cursor.E_RESIZE_CURSOR) {
 //			
@@ -212,5 +234,6 @@ public class ResizeMoveMouseMotionAdapter extends MouseMotionAdapter {
 		else if (source.getParent().getParent() instanceof AbstractZoomableContainer cont) parent = cont;
 		return parent;
 	}
+
 	
 }

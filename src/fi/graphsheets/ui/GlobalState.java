@@ -217,6 +217,9 @@ public class GlobalState {
 		return addSheet;
 	}
 	
+	public static JFrame getRootFrame() {
+		return frame;
+	}
 
 
 }

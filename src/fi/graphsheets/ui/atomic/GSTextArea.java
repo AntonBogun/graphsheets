@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.MouseAdapter;
 import java.awt.geom.AffineTransform;
 
 import javax.swing.BorderFactory;
@@ -16,7 +17,7 @@ import fi.graphsheets.graphelements.Cell;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet.SheetEntry;
 import fi.graphsheets.ui.IZoomableComponent;
-import fi.graphsheets.ui.ResizeMoveMouseMotionAdapter;
+import fi.graphsheets.ui.ResizeMoveMouseAdapter;
 
 @SuppressWarnings("serial")
 public class GSTextArea extends JTextArea implements IZoomableComponent {
@@ -62,8 +63,9 @@ public class GSTextArea extends JTextArea implements IZoomableComponent {
 
 			}
 		});
-		
-		this.addMouseMotionListener(new ResizeMoveMouseMotionAdapter());
+		ResizeMoveMouseAdapter ma = new ResizeMoveMouseAdapter();
+//		this.addMouseListener(ma);
+		this.addMouseMotionListener(ma);
 		
 		
 		

@@ -2,7 +2,7 @@ package fi.graphsheets.ui.atomic;
 
 import java.awt.Cursor;
 import java.awt.Graphics;
-import java.awt.Image;
+import java.awt.event.MouseAdapter;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
@@ -10,7 +10,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingWorker;
 
 import fi.graphsheets.ui.IZoomableComponent;
-import fi.graphsheets.ui.ResizeMoveMouseMotionAdapter;
+import fi.graphsheets.ui.ResizeMoveMouseAdapter;
 
 public class GSImage extends JComponent implements IZoomableComponent{
 	
@@ -20,7 +20,9 @@ public class GSImage extends JComponent implements IZoomableComponent{
 //		if(image.getWidth()>1000) image = (BufferedImage) image.getScaledInstance(1000, image.getHeight(), Image.SCALE_DEFAULT);
 //		if(image.getHeight()>1000) image = (BufferedImage) image.getScaledInstance(image.getHeight(), 1000, Image.SCALE_DEFAULT);
 		this.image = image;
-		this.addMouseMotionListener(new ResizeMoveMouseMotionAdapter());
+		ResizeMoveMouseAdapter ma = new ResizeMoveMouseAdapter();
+//		this.addMouseListener(ma);
+		this.addMouseMotionListener(ma);
 	}
 	
 	@Override
