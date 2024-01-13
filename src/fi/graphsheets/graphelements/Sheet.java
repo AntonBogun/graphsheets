@@ -95,8 +95,8 @@ public class Sheet implements Iterable<Sheet.SheetEntry>, Serializable{
 	}
 	
 	private List<SheetEntry> entries = new ArrayList<SheetEntry>();
-	private int width;
-	private int height;
+	public int width;
+	public int height;
 	public ArrayList<Integer> layoutWidths;
 	public ArrayList<Integer> layoutHeights;
 	public transient boolean sheetChanged;

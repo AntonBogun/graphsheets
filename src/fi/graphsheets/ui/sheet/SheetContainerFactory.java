@@ -2,6 +2,7 @@ package fi.graphsheets.ui.sheet;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 
 import javax.swing.JComponent;
@@ -81,6 +82,53 @@ public class SheetContainerFactory {
 		}
 	}
 	
+
+	public static JComponent getAdjacentCellToFocus(JComponent cell, int keyCode) {
+		SheetEntry entry;
+		if((entry = (SheetEntry) cell.getClientProperty("entry")) != null) {
+			if(cell.getParent() instanceof SheetContainer container) {
+				Sheet sheet = container.sheet;
+				int x = entry.x();
+				int y = entry.y();
+				switch(keyCode) {
+                    case KeyEvent.VK_UP -> {
+                        if(y > 0) {
+                            return getCellAt(container, x, y-1);
+                        }
+                    }
+                    case KeyEvent.VK_DOWN -> {
+                        if(y < sheet.height-1) {
+                            return getCellAt(container, x, y+1);
+                        }
+                    }
+                    case KeyEvent.VK_LEFT -> {
+                        if(x > 0) {
+                            return getCellAt(container, x-1, y);
+                        }
+                    }
+                    case KeyEvent.VK_RIGHT -> {
+                        if(x < sheet.width-1) {
+                            return getCellAt(container, x+1, y);
+                        }
+                    }
+                }
+			}
+		}
+		return null;
+	}
+	
+	private static JComponent getCellAt(SheetContainer sheetContainer, int x, int i) {
+		for (Component c : sheetContainer.getComponents()) {
+			if (c instanceof JComponent jcomponent
+					&& jcomponent.getClientProperty("entry") instanceof SheetEntry entry) {
+				if (entry.x() == x && entry.y() == i) {
+					return jcomponent;
+				}
+			}
+		}
+		return null;
+	}
+
 	@SuppressWarnings("serial")
 	private class SheetContainer extends AbstractZoomableContainer{
 		
@@ -179,4 +227,7 @@ public class SheetContainerFactory {
 
 
 	}
+	
+	
+
 }

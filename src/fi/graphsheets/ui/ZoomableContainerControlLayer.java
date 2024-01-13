@@ -1,9 +1,9 @@
 package fi.graphsheets.ui;
 
 import java.awt.AWTEvent;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
@@ -20,6 +20,7 @@ import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
+import fi.graphsheets.ui.sheet.SheetContainerFactory;
 
 @SuppressWarnings("serial")
 public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableContainer> {
@@ -221,6 +222,9 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 		if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
 			GlobalState.clearAdd();
 		}
+		
+		JComponent focusCell = (JComponent) KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+		if(e.isAltDown() && (focusCell = SheetContainerFactory.getAdjacentCellToFocus(focusCell, e.getKeyCode()))!=null) focusCell.requestFocus();
 		
 		if (e.getKeyCode() == 107) {
 			l.getView().zoomFrom(new Point(l.getWidth() / 2, l.getHeight() / 2), 2);

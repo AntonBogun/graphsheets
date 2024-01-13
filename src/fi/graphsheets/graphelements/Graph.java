@@ -41,12 +41,13 @@ public class Graph implements Serializable{
 	
 
 	public double getDiameter() {
-		if(nodes.size() == 0 || nodes.size() == 1) return 10000;
-		System.out.println(nodes.size());
-		Node node = nodes.get(0);
-		Node farthestNode = nodes.stream().max((node1, node2) -> (Double.compare(Node.getDistance(node1, node),(Node.getDistance(node2, node))))).get();
-		Node farthestNode2 = nodes.stream().max((node1, node2) -> (Double.compare(Node.getDistance(node1, farthestNode),(Node.getDistance(node1, farthestNode))))).get();
-		return Node.getDistance(farthestNode, farthestNode2);
+		return 10000;
+//		if(nodes.size() == 0 || nodes.size() == 1) return 10000;
+//		System.out.println(nodes.size());
+//		Node node = nodes.get(0);
+//		Node farthestNode = nodes.stream().max((node1, node2) -> (Double.compare(Node.getDistance(node1, node),(Node.getDistance(node2, node))))).get();
+//		Node farthestNode2 = nodes.stream().max((node1, node2) -> (Double.compare(Node.getDistance(node1, farthestNode),(Node.getDistance(node1, farthestNode))))).get();
+//		return Node.getDistance(farthestNode, farthestNode2);
 	}
 	
 }
