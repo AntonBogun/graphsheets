@@ -1,4 +1,4 @@
-package fi.graphsheets.ui;
+package fi.graphsheets.ui.zooming;
 
 import java.awt.geom.AffineTransform;
 

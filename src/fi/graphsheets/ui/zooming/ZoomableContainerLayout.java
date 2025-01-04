@@ -1,4 +1,4 @@
-package fi.graphsheets.ui;
+package fi.graphsheets.ui.zooming;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -6,6 +6,8 @@ import java.awt.Rectangle;
 
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
+
+import fi.graphsheets.ui.GSRepaintManager;
 
 public abstract class ZoomableContainerLayout {
 	

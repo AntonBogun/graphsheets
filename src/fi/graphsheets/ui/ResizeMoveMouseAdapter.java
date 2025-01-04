@@ -14,6 +14,8 @@ import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet.SheetEntry;
 import fi.graphsheets.ui.atomic.GSTextArea;
 import fi.graphsheets.ui.sheet.SheetContainerFactory;
+import fi.graphsheets.ui.zooming.AbstractZoomableContainer;
+import fi.graphsheets.ui.zooming.IZoomableComponent;
 
 public class ResizeMoveMouseAdapter extends MouseInputAdapter {
 	boolean dragging = false;

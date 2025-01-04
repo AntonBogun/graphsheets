@@ -21,12 +21,12 @@ import fi.graphsheets.graphelements.Edge;
 import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet;
-import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSRepaintManager;
-import fi.graphsheets.ui.ZoomableContainerControlLayer;
 import fi.graphsheets.ui.atomic.GSImage;
 import fi.graphsheets.ui.atomic.GSTextArea;
 import fi.graphsheets.ui.sheet.SheetContainerFactory;
+import fi.graphsheets.ui.zooming.AbstractZoomableContainer;
+import fi.graphsheets.ui.zooming.ZoomableContainerControlLayer;
 
 public class GraphContainerFactory {
 	

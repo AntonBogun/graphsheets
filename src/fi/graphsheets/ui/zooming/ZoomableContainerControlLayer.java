@@ -1,4 +1,4 @@
-package fi.graphsheets.ui;
+package fi.graphsheets.ui.zooming;
 
 import java.awt.AWTEvent;
 import java.awt.KeyboardFocusManager;
@@ -19,6 +19,8 @@ import fi.graphsheets.graphelements.Cell;
 import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet;
+import fi.graphsheets.ui.GlobalState;
+import fi.graphsheets.ui.ResizeMoveMouseAdapter;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
 import fi.graphsheets.ui.sheet.SheetContainerFactory;
 

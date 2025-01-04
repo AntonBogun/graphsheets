@@ -16,8 +16,8 @@ import javax.swing.event.DocumentListener;
 import fi.graphsheets.graphelements.Cell;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet.SheetEntry;
-import fi.graphsheets.ui.IZoomableComponent;
 import fi.graphsheets.ui.ResizeMoveMouseAdapter;
+import fi.graphsheets.ui.zooming.IZoomableComponent;
 
 @SuppressWarnings("serial")
 public class GSTextArea extends JTextArea implements IZoomableComponent {

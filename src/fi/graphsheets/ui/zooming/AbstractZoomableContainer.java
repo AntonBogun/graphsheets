@@ -1,4 +1,4 @@
-package fi.graphsheets.ui;
+package fi.graphsheets.ui.zooming;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -9,9 +9,16 @@ import java.awt.geom.NoninvertibleTransformException;
 
 import javax.swing.JComponent;
 
-@SuppressWarnings("serial")
+
+/**
+ * The abstract base class for all zoomable containers. This class provides the values of the current zoom transform and functions to compose or create zoom transformations.
+ */
 public abstract class AbstractZoomableContainer extends JComponent {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2253746129174140006L;
 	private Rectangle zoomRegion;
 	private AffineTransform zoomTransform = AffineTransform.getScaleInstance(1, 1);
 	private AffineTransform scaleTransform = AffineTransform.getScaleInstance(1, 1);

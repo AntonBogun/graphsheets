@@ -14,11 +14,11 @@ import fi.graphsheets.graphelements.Cell;
 import fi.graphsheets.graphelements.Edge;
 import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
-import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSMenu;
 import fi.graphsheets.ui.GSRepaintManager;
 import fi.graphsheets.ui.GlobalState;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
+import fi.graphsheets.ui.zooming.AbstractZoomableContainer;
 
 
 public class Main{

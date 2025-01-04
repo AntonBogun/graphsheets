@@ -15,12 +15,12 @@ import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.graphelements.Sheet;
 import fi.graphsheets.graphelements.Sheet.SheetEntry;
-import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GSRepaintManager;
 import fi.graphsheets.ui.GlobalState;
-import fi.graphsheets.ui.ZoomableContainerControlLayer;
 import fi.graphsheets.ui.atomic.GSTextArea;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
+import fi.graphsheets.ui.zooming.AbstractZoomableContainer;
+import fi.graphsheets.ui.zooming.ZoomableContainerControlLayer;
 
 public class SheetContainerFactory {
 	//Similar to GraphContainerFactory

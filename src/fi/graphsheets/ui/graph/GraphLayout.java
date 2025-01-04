@@ -11,11 +11,11 @@ import javax.swing.JComponent;
 import javax.swing.JLayer;
 
 import fi.graphsheets.graphelements.Node;
-import fi.graphsheets.ui.AbstractZoomableContainer;
 import fi.graphsheets.ui.GlobalState;
-import fi.graphsheets.ui.IZoomableComponent;
-import fi.graphsheets.ui.ZoomableContainerLayout;
 import fi.graphsheets.ui.sheet.SheetContainerFactory;
+import fi.graphsheets.ui.zooming.AbstractZoomableContainer;
+import fi.graphsheets.ui.zooming.IZoomableComponent;
+import fi.graphsheets.ui.zooming.ZoomableContainerLayout;
 
 public class GraphLayout extends ZoomableContainerLayout implements LayoutManager {
 	

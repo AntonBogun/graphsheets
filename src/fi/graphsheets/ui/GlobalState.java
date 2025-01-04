@@ -26,6 +26,7 @@ import fi.graphsheets.graphelements.Cell;
 import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
+import fi.graphsheets.ui.zooming.AbstractZoomableContainer;
 
 public class GlobalState {
 	
