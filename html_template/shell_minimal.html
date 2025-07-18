@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <style>
+      #canvas {
+        width: 256;
+        height: 256;
+        margin: auto auto;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+    
+    <script type='text/javascript'>
+      var canvasElement = document.getElementById('canvas');
+
+      // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+      // application robust, you may want to override this behavior before shipping!
+      // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+      canvasElement.addEventListener("webglcontextlost", (e) => {
+        alert('WebGL context lost. You will need to reload the page.');
+        e.preventDefault();
+      }, false);
+
+      setInterval(() => {
+        imageData = new ImageData(new Uint8ClampedArray(Module.getPixelData()),256,256);
+        canvasElement.getContext("2d").putImageData(imageData,0,0);
+        // console.log(typeof(Module.ccall('int_sqrt', 'Uint8ClampedArray', ['number'], [25])))
+      }, 1000/60);
+
+    </script>
+    {{{ SCRIPT }}}
+  </body>
+</html>
