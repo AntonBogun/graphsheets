@@ -35,3 +35,7 @@ bin/
 
 target/
 graphsheet-yew/
+
+index.html
+index.js
+index.wasm
