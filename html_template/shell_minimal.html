@@ -28,16 +28,38 @@
           e.preventDefault();
         }, false);
 
-        setInterval(() => {
-          var width = canvas.scrollWidth;
-          var height = canvas.scrollHeight;
+        var width = canvas.scrollWidth;
+        var height = canvas.scrollHeight;
+        canvas.width = width;
+        canvas.height = height;
+        
+        addEventListener("resize", (event) => {
+          width = canvas.scrollWidth;
+          height = canvas.scrollHeight;
           canvas.width = width;
           canvas.height = height;
+          redraw();
+        })
+
+        var start_time = performance.now(); 
+        var numFrames = 0;
+        function redraw() {
+          let new_start_time = performance.now();
           Module.setViewportData(width, height);
           ctx.imageSmoothingEnabled = false;
           imageData = new ImageData(new Uint8ClampedArray(Module.getPixelData()),width,height);
           ctx.putImageData(imageData,0,0);
-          // console.log(typeof(Module.ccall('int_sqrt', 'Uint8ClampedArray', ['number'], [25])))
+          numFrames++;
+          var elapsed = performance.now() - start_time;
+          if (elapsed > 1000) {
+            console.log("FPS: " + numFrames / (elapsed / 1000));
+            start_time = new_start_time;
+            numFrames = 0;
+          }
+        }
+
+        setInterval(() => {
+          redraw();
         }, 1000/60);
       }
     </script>
