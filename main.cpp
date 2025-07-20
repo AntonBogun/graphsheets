@@ -9,21 +9,52 @@
 #include <math.h>
 #include <cmath>
 
+using u8 = uint8_t;
+
 using namespace emscripten;
 
+//MARK: Globals
+int canvas_width = 0;
+int canvas_height = 0;
+int canvas_len=0;
+
 //MARK: Structs
-struct point {
+struct pointd;
+struct pointi;
+
+struct pointi {
     int x;
     int y;
-    point(int x = 0, int y = 0) : x(x), y(y) {}
-    point operator+(const point& other) const {
-        return point(x + other.x, y + other.y);
+    pointi(int x = 0, int y = 0) : x(x), y(y) {}
+    pointi operator+(const pointi& other) const {
+        return pointi(x + other.x, y + other.y);
     }
-    point operator-(const point& other) const{
-        return point(x - other.x, y - other.y);
+    pointi operator-(const pointi& other) const{
+        return pointi(x - other.x, y - other.y);
     }
-
+    pointd to_double() const;
 };
+
+
+struct pointd{
+    double x,y;
+    pointd(int x = 0, int y = 0) : x(x), y(y) {}
+    pointd operator+(const pointd& other) const {
+        return pointd(x + other.x, y + other.y);
+    }
+    pointd operator-(const pointd& other) const{
+        return pointd(x - other.x, y - other.y);
+    }
+    pointi to_int() const;
+};
+pointd pointi::to_double() const {
+    return pointd(double(x), double(y));
+}
+pointi pointd::to_int() const {
+    return pointi(int(x), int(y));
+}
+
+
 struct box {
     int x;
     int y;
@@ -31,20 +62,69 @@ struct box {
     int height;
     box(int x = 0, int y = 0, int width = 100, int height = 100) : x(x), y(y), width(width), height(height) {}
 };
+
 struct color {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t a;
-    color(uint8_t r = 0, uint8_t g = 0, uint8_t b = 0, uint8_t a = 255) : r(r), g(g), b(b), a(a) {}
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
+    color(u8 r = 0, u8 g = 0, u8 b = 0, u8 a = 255) : r(r), g(g), b(b), a(a) {}
 };
 
-//MARK: Globals
-int canvas_width = 0;
-int canvas_height = 0;
-int canvas_len=0;
+//does a full circle between 0.0 and 1.0
+color from_hue(double hue) {
+    hue = fmod(hue, 1.0);
+    if (hue < 0) hue += 1.0;
+    int i = int(hue * 6);
+    double f = hue * 6 - i;
+    double p = 0.0;
+    double q = 1.0 - f;
+    double t = f;
 
+    switch (i % 6) {
+        case 0: return color(255, t * 255, p * 255);
+        case 1: return color(q * 255, 255, p * 255);
+        case 2: return color(p * 255, 255, t * 255);
+        case 3: return color(p * 255, q * 255, 255);
+        case 4: return color(t * 255, p * 255, 255);
+        case 5: return color(255, p * 255, q * 255);
+        default: return color(0, 0, 0);
+    }
+}
 
+struct trans2d {
+    double px,py, ax, ay, bx, by;
+    trans2d(double px = 0, double py = 0, double ax = 1, double ay = 0, double bx = 0, double by = 1) 
+        : px(px), py(py), ax(ax), ay(ay), bx(bx), by(by) {}
+    static trans2d identity() {
+        return trans2d(0, 0, 1, 0, 0, 1);
+    }
+    static trans2d rot(double angle) {
+        double c = cos(angle);
+        double s = sin(angle);
+        return trans2d(0, 0, c, -s, s, c);
+    }
+    void set_origin(double x, double y) {
+        px = x;
+        py = y;
+    }
+    void set_origin(pointd p) {
+        px = p.x;
+        py = p.y;
+    }
+    void mul_scale(double sx, double sy) {
+        ax *= sx;
+        ay *= sy;
+        bx *= sx;
+        by *= sy;
+    }
+    pointi apply(pointi p) const {
+        return pointi(px + ax * double(p.x) + bx * double(p.y), py + ay * double(p.x) + by * double(p.y));
+    }
+    pointd apply(pointd p) const {
+        return pointd(px + ax * p.x + bx * p.y, py + ay * p.x + by * p.y);
+    }
+};
 
 box randBox(){
     box b;
@@ -60,12 +140,18 @@ void setViewportData(int _width, int _height) {
     canvas_height = _height;
     canvas_len = canvas_width * canvas_height;
 }
-void set_col(std::vector<color>&pixelData,int x, int y, color& col){
+
+inline void set_col(std::vector<color>&pixelData,int x, int y, color& col){
     int p = x + y * canvas_width;
     if(p >= 0 && p < canvas_len) {
         pixelData[p] = col;
     }
 }
+
+inline void set_col(std::vector<color>&pixelData,pointi p, color& col){
+    set_col(pixelData, p.x, p.y, col);
+}
+
 
 void drawLine(std::vector<color>& pixelData, color col, int xi, int yi, int xf, int yf) {
     if(abs(xf - xi) >= abs(yi - yf)){
@@ -104,7 +190,7 @@ void drawLine(std::vector<color>& pixelData, color col, int xi, int yi, int xf, 
     }
 }
 
-void drawLine(std::vector<color>& pixelData, color col, point x, point y) {
+void drawLine(std::vector<color>& pixelData, color col, pointi x, pointi y) {
     int xi = x.x;
     int yi = x.y;
     int xf = y.x;
@@ -121,8 +207,30 @@ void drawBox(std::vector<color>& pixel_data, color col, box box){
     drawLine(pixel_data, col, box.x, box.y+height, box.x+width, box.y+height);
 }
 
-point rotatePoint(point p, point origin, double angle) {
-    point op = p - origin;
+void drawFilledBox(std::vector<color>& pixel_data, color col, box box){
+    for(int y = box.y; y < box.y + box.height; y++) {
+        for(int x = box.x; x < box.x + box.width; x++) {
+            set_col(pixel_data, x, y, col);
+        }
+    }    
+}
+
+void drawFilledRotatedBox(std::vector<color>& pixel_data, color col, box box, double angle) {
+    //rotate around center
+    trans2d t = trans2d::rot(angle);
+    pointd center = pointd(double(box.x) + double(box.width) / 2.0, box.y + double(box.height) / 2.0);
+    t.set_origin(center);
+    
+    for(double y = box.y; y < box.y + box.height; y++) {
+        for(double x = box.x; x < box.x + box.width; x++) {
+            pointi p = t.apply(pointd(x, y)-center).to_int();
+            set_col(pixel_data, p, col);
+        }
+    }
+}
+
+pointi rotatepointi(pointi p, pointi origin, double angle) {
+    pointi op = p - origin;
     double x = op.x;
     double y = op.y;
     double c= cos(angle);
@@ -135,12 +243,12 @@ point rotatePoint(point p, point origin, double angle) {
 void drawRotatedBox(std::vector<color>& pixel_data, color col, box box, double angle) {
     int width = box.width;
     int height = box.height;
-    point origin = point(box.x + width/2, box.y + height/2);
+    pointi origin = pointi(box.x + width/2, box.y + height/2);
 
-    point x1 = rotatePoint(point(box.x, box.y), origin, angle);
-    point x2 = rotatePoint(point(box.x + width, box.y), origin, angle);
-    point x3 = rotatePoint(point(box.x + width, box.y + height), origin, angle);
-    point x4 = rotatePoint(point(box.x, box.y + height), origin, angle);
+    pointi x1 = rotatepointi(pointi(box.x, box.y), origin, angle);
+    pointi x2 = rotatepointi(pointi(box.x + width, box.y), origin, angle);
+    pointi x3 = rotatepointi(pointi(box.x + width, box.y + height), origin, angle);
+    pointi x4 = rotatepointi(pointi(box.x, box.y + height), origin, angle);
 
     drawLine(pixel_data, col, x1, x2);
     drawLine(pixel_data, col, x2, x3);
@@ -152,19 +260,21 @@ double t = 0;
 val getPixelData() {
     t++;
     std::vector<color> pixel_data(canvas_width*canvas_height, color{255, 255, 255, 255});
-    
-    
     for(int i = 0;i < t;i++){
-        drawRotatedBox(pixel_data, color{0, 0, 0, 255}, box{(i*17)%canvas_width, 50 + (i*443)%canvas_height, 100, 100}, t/60.0);
+        drawFilledRotatedBox(pixel_data,
+            // color{
+            //     u8((i*17)%255), u8((i*443)%255), u8((i*13)%255), 255},
+            from_hue(((i*61)%17)/17.),
+            box{(i*17)%canvas_width, 50 + (i*443)%canvas_height, 100, 100}, 0*double(i)*double(t)/60.0);
         // drawRotatedBox(pixel_data, color{0, 0, 0, 255}, randBox(), i*t/60.0);
     }
 
-    return val(typed_memory_view(pixel_data.size()*4, reinterpret_cast<uint8_t*>(pixel_data.data())));
+    return val(typed_memory_view(pixel_data.size()*4, reinterpret_cast<u8*>(pixel_data.data())));
 }
 
 
 EMSCRIPTEN_BINDINGS(my_module){
-    // register_vector<uint8_t>("Uint8Array");
+    // register_vector<u8>("Uint8Array");
     function("setViewportData", &setViewportData);
     function("getPixelData", &getPixelData);
 }
