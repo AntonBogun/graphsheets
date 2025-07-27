@@ -35,7 +35,9 @@ bin/
 
 target/
 graphsheet-yew/
+node_modules/
 
-index.html
 index.js
 index.wasm
+package-lock.json
+_*

@@ -1,5 +1,5 @@
 @echo off
-call emcc -lembind -sASSERTIONS -o index.html main.cpp -O3 --shell-file html_template\shell_minimal.html
+call npm run build
 if %errorlevel% equ 0 (
     python -m http.server
 ) else (

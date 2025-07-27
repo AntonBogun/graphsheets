@@ -1,0 +1,15 @@
+{
+    "name": "webgl-typescript-project",
+    "version": "1.0.0",
+    "description": "WebGL TypeScript project",
+    "main": "src/main.ts",
+    "scripts": {
+      "build": "tsc  --project tsconfig.json && python -m http.server",
+      "dev": "tsc --project tsconfig.json --watch",
+      "serve": "python -m http.server"
+    },
+    "devDependencies": {
+      "typescript": "^5.8.3",
+      "@types/webgl2": "^0.0.11"
+    }
+  }
