@@ -45,16 +45,33 @@ function perspective(fov, aspectRatio, near, far) {
         0, 0, near * far * rangeInv * 2, 0,
     ];
 }
-let mouseX = 0;
-let mouseY = 0;
 let z_value = 1.0;
+let last_position = { x: 0, y: 0 };
+let position = { x: 0, y: 0 };
+let initial_position = { x: 0, y: 0 };
+let is_dragging = false;
+document.onmousedown = (event) => {
+    is_dragging = true;
+    initial_position = { x: event.pageX, y: event.pageY };
+};
 document.onmousemove = (event) => {
-    mouseX = event.pageX;
-    mouseY = event.pageY;
+    if (!is_dragging)
+        return;
+    position.x = last_position.x + (z_value * 2) * (event.pageX - initial_position.x) / window.innerHeight;
+    position.y = last_position.y + (z_value * 2) * -(event.pageY - initial_position.y) / window.innerHeight;
+};
+document.onmouseup = (event) => {
+    last_position.x += (z_value * 2) * (event.pageX - initial_position.x) / window.innerHeight;
+    last_position.y += (z_value * 2) * -(event.pageY - initial_position.y) / window.innerHeight;
+    is_dragging = false;
 };
 document.onkeydown = (event) => {
-    if (event.key == )
-        ;
+    if (event.key == "+") {
+        z_value /= 2;
+    }
+    else if (event.key == "-") {
+        z_value *= 2;
+    }
 };
 window.onload = () => {
     Promise.all([openFile("src/vert.glsl"), openFile("src/frag.glsl")]).then(([vertexShaderSource, fragmentShaderSource]) => {
@@ -68,21 +85,17 @@ window.onload = () => {
         window.onresize = () => {
             requestAnimationFrame(redraw);
         };
-        let position = { x: 0, y: 0 };
-        let z_value = 1.0;
         function redraw() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             gl.viewport(0, 0, window.innerWidth, window.innerHeight);
-            position.x = mouseX;
-            position.y = mouseY;
             let eye = [position.x, position.y, z_value];
-            let target = [0, 0, -1];
+            let target = [position.x, position.y, -1];
             let up = [0, 1, 0];
             let vMatrix = lookAt(eye, target, up);
             const viewLocation = gl.getUniformLocation(program, "view");
             gl.uniformMatrix4fv(viewLocation, false, vMatrix);
-            let pMatrix = perspective(1.5 * Math.PI, window.innerWidth / window.innerHeight, 0.5, 2);
+            let pMatrix = perspective(1.5 * Math.PI, window.innerWidth / window.innerHeight, 0.0, 1000000);
             const perspectiveLocation = gl.getUniformLocation(program, "perspective");
             gl.uniformMatrix4fv(perspectiveLocation, false, pMatrix);
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
