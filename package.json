@@ -4,7 +4,7 @@
     "description": "WebGL TypeScript project",
     "main": "src/main.ts",
     "scripts": {
-      "build": "tsc  --project tsconfig.json && python -m http.server",
+      "build": "python -m http.server | tsc --project tsconfig.json --watch",
       "dev": "tsc --project tsconfig.json --watch",
       "serve": "python -m http.server"
     },

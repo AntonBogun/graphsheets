@@ -26,6 +26,9 @@ class Vec2d {
         public x: number,
         public y: number
     ){};
+    static mag(v: Vec2d) {
+        return Math.hypot(v.x, v.y);
+    }
     static smul(v: Vec2d, num: number): Vec2d {
         return new Vec2d(v.x * num, v.y * num);
     }
@@ -37,6 +40,9 @@ class Vec2d {
     }
     static emul(a: Vec2d, b: Vec2d): Vec2d {
         return new Vec2d(a.x * b.x, a.y * b.y);
+    }
+    static dot(a: Vec2d, b: Vec2d): number {
+        return a.x * b.x + a.y * b.y;
     }
 }
 class Vec3d {
@@ -50,6 +56,18 @@ class Vec3d {
     }
     static sub(a: Vec3d, b: Vec3d): Vec3d {
         return new Vec3d(a.x - b.x, a.y - b.y, a.z - b.z);
+    }
+    
+    static mmul(a: number[], b: Vec3d): Vec3d {
+        return new Vec3d(
+            a[0] * b.x + a[4] * b.y + a[8] * b.z + a[12],
+            a[1] * b.x + a[5] * b.y + a[9] * b.z + a[13],
+            a[2] * b.x + a[6] * b.y + a[10] * b.z + a[14]
+        );
+    }
+    static normalize(v: Vec3d): Vec3d {
+        const len = Math.hypot(v.x, v.y, v.z);
+        return len > 0 ? Vec3d.sdiv(v, len) : new Vec3d(0, 0, 1);
     }
 }
 class Vec4d {
@@ -98,6 +116,19 @@ function lookAt(eye: Vec3d, target: Vec3d, up: Vec3d): Float32Array {
     ]);
 }
 
+function inverseLookAt(eye: Vec3d, target: Vec3d, up: Vec3d): number[] {
+    const zAxis = normalize(Vec3d.sub(eye, target));
+    const xAxis = normalize(crossProduct(up, zAxis));
+    const yAxis = crossProduct(zAxis, xAxis);
+
+    return [
+        xAxis.x, xAxis.y, xAxis.z, 0,
+        yAxis.x, yAxis.y, yAxis.z, 0,
+        zAxis.x, zAxis.y, zAxis.z, 0,
+        eye.x,   eye.y,   eye.z,   1
+    ];
+}
+
 function perspective(fov: number, aspectRatio: number, near: number, far: number): GLfloat[] {
 
   const f = 1.0 / Math.tan(fov / 2);
@@ -109,6 +140,28 @@ function perspective(fov: number, aspectRatio: number, near: number, far: number
     0, 0, (near + far) * rangeInv, -1,
     0, 0, near * far * rangeInv * 2, 0,
   ];
+}
+
+function inversePerspective(fov: number, aspectRatio: number, near: number, far: number): GLfloat[] {
+    const f = 1.0 / Math.tan(fov / 2);
+    const rangeInv = 1 / (near - far);
+
+    const A = f / aspectRatio;
+    const B = f;
+    const C = (near + far) * rangeInv;
+    const D = near * far * rangeInv * 2;
+    
+    return [
+        1/A,   0,    0,    0,
+         0,   1/B,    0,    0,
+         0,     0,    0,  1/D,
+         0,     0,   -1,  C/D
+    ];
+}
+
+function mouseTo2DPos(): Vec2d {
+
+    return new Vec2d(0, 0);
 }
 
 let z_value = 1.0;
@@ -152,6 +205,91 @@ document.onkeydown = (event) => {
         z_value *= 2;
     }
 }
+
+
+let touch_initial_distance = 0;
+let touch_initial_position: Vec2d = new Vec2d(0, 0);
+let touch_last_position: Vec2d = new Vec2d(0,0);
+document.addEventListener("touchstart", (event) => {
+    event.preventDefault();
+    if(event.touches.length != 2) { 
+        touch_initial_distance = 0;
+        touch_initial_position = new Vec2d(0, 0);
+        touch_last_position = new Vec2d(0,0);
+        return;
+    }
+    let touch0 = new Vec2d(event.touches[0].clientX, event.touches[0].clientY);
+    let touch1 = new Vec2d(event.touches[1].clientX, event.touches[1].clientY);
+    touch_initial_position = Vec2d.smul(Vec2d.add(touch0, touch1), 0.5);
+    touch_initial_distance = Vec2d.mag(Vec2d.sub(touch0, touch1));
+    touch_last_position = position;
+},
+{passive: false});
+
+document.addEventListener("touchmove", (event) => {
+    event.preventDefault();
+    if(event.touches.length != 2) {
+        touch_initial_distance = 0;
+        touch_initial_position = new Vec2d(0, 0);
+        touch_last_position = new Vec2d(0,0);
+        return;
+    }
+    let touch0 = new Vec2d(event.touches[0].clientX, event.touches[0].clientY);
+    let touch1 = new Vec2d(event.touches[1].clientX, event.touches[1].clientY);
+    let touch_current_distance = Vec2d.mag(Vec2d.sub(touch0, touch1));
+    let touch_current_position = Vec2d.smul(Vec2d.add(touch0, touch1), 0.5);
+    z_value = touch_current_distance/touch_initial_distance;
+    position = Vec2d.add(touch_last_position, 
+                            Vec2d.sub(touch_current_position, touch_initial_position)
+                        );
+
+},
+{passive: false});
+
+document.addEventListener("touchend", (event) => {
+    event.preventDefault();
+    if(event.touches.length != 2) {
+        touch_initial_distance = 0;
+        touch_initial_position = new Vec2d(0, 0);
+        touch_last_position = new Vec2d(0,0);
+        return;
+    }
+    let touch0 = new Vec2d(event.touches[0].clientX, event.touches[0].clientY);
+    let touch1 = new Vec2d(event.touches[1].clientX, event.touches[1].clientY);
+    let touch_current_position = Vec2d.smul(Vec2d.add(touch0, touch1), 0.5);
+    position = Vec2d.add(touch_last_position, 
+                    Vec2d.sub(touch_current_position, touch_initial_position)
+                );
+    touch_initial_distance = 0;
+    touch_initial_position = new Vec2d(0, 0);
+    touch_last_position = new Vec2d(0,0);
+},
+{passive:false});
+
+document.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        let mouse_position = new Vec2d(2*(event.clientX - (window.innerWidth / 2)) / window.innerWidth, 
+                                        2*((window.innerHeight-event.clientY) - (window.innerHeight / 2)) / window.innerHeight);
+        console.log(mouse_position);
+        let world_mouse_position = Vec3d.mmul(
+            inversePerspective(1.5*Math.PI, window.innerWidth/window.innerHeight, 0.000001, 1000000),
+            new Vec3d(mouse_position.x, mouse_position.y, 0)
+        );
+        world_mouse_position = Vec3d.mmul(
+            inverseLookAt(new Vec3d(position.x, position.y, z_value), new Vec3d(position.x, position.y, -1), new Vec3d(0, 1, 0)),
+            world_mouse_position
+        );
+        let delta = Vec2d.dot(new Vec2d(event.deltaX, event.deltaY), new Vec2d(1,1))/(event.ctrlKey?50:100);
+        let position_to_mouse = Vec3d.normalize(Vec3d.sub(world_mouse_position, new Vec3d(position.x, position.y, z_value)));
+        let xzslope = position_to_mouse.x / position_to_mouse.z;
+        let yzslope = position_to_mouse.y / position_to_mouse.z;
+        if(z_value * 2**delta > 0.01){
+            position.x = position.x + xzslope * ((z_value * 2**delta) - z_value);
+            position.y = position.y + yzslope * ((z_value * 2**delta) - z_value);
+            z_value *= 2**(delta);
+        }
+    }
+, { passive: false });
 
 window.onload = () => {
 Promise.all([openFile("src/vert.glsl"), openFile("src/frag.glsl"), openImage("mandelbrot_set.jpg")]).then(([vertexShaderSource, fragmentShaderSource, mandelbrot]) => {
