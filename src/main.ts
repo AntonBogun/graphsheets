@@ -1,9 +1,24 @@
 "use strict";
 
-let openFile = function(filename: string): Promise<string> {
+//MARK: file classes
+class SourceFile {
+    constructor(
+        public filename: string,
+        public content: string
+    ){}
+}
+class TextureFile {
+    constructor(
+        public filename: string,
+        public image: HTMLImageElement
+    ){}
+}
+
+//MARK: open files and images
+let openFile = function(filename: string): Promise<SourceFile> {
     return fetch(filename).then((result) => {
         return result.text().then((result) => {
-            return result;
+            return new SourceFile(filename,result);
         });
     });
 }
@@ -21,6 +36,7 @@ let openImage = function(filename: string): Promise<HTMLImageElement> {
     });
 }
 
+//MARK: vec 2d/3d/4d, box
 class Vec2d {
     constructor(
         public x: number,
@@ -85,6 +101,7 @@ interface Box {
     height: number;
 }
 
+//MARK: vector functions
 function crossProduct(a: Vec3d, b: Vec3d): Vec3d {
     return new Vec3d(
         a.y * b.z - a.z * b.y,
@@ -102,18 +119,18 @@ function dot(a: Vec3d, b: Vec3d): number {
     return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
-function lookAt(eye: Vec3d, target: Vec3d, up: Vec3d): Float32Array {
+function lookAt(eye: Vec3d, target: Vec3d, up: Vec3d): number[] {
     const zAxis = normalize(Vec3d.sub(eye,target));
     const xAxis = normalize(crossProduct(up, zAxis));
 
     const yAxis = crossProduct(zAxis, xAxis);
 
-    return new Float32Array([
+    return [
         xAxis.x,  yAxis.x,  zAxis.x,  0,
         xAxis.y,  yAxis.y,  zAxis.y,  0,
         xAxis.z,  yAxis.z,  zAxis.z,  0,
         -dot(xAxis, eye), -dot(yAxis, eye), -dot(zAxis, eye), 1
-    ]);
+    ];
 }
 
 function inverseLookAt(eye: Vec3d, target: Vec3d, up: Vec3d): number[] {
@@ -164,6 +181,7 @@ function mouseTo2DPos(): Vec2d {
     return new Vec2d(0, 0);
 }
 
+//MARK: !! temp camera
 let z_value = 1.0;
 let last_position: Vec2d = new Vec2d(0,0);
 let position: Vec2d = new Vec2d(0,0);
@@ -291,12 +309,139 @@ document.addEventListener("wheel", (event) => {
     }
 , { passive: false });
 
+
+//neither geometry nor compute seem to be defined
+type WebGLVertexShader = WebGL2RenderingContext['VERTEX_SHADER'];
+type WebGLFragmentShader = WebGL2RenderingContext['FRAGMENT_SHADER'];
+type shaderType = WebGLVertexShader | WebGLFragmentShader;
+function toShaderTypeString(type: shaderType): string {
+    switch(type) {
+        case WebGL2RenderingContext.VERTEX_SHADER:
+            return "VERTEX_SHADER";
+        case WebGL2RenderingContext.FRAGMENT_SHADER:
+            return "FRAGMENT_SHADER";
+        default:
+            throw new Error("Unknown shader type: " + type);
+    }
+}
+//MARK: WebGL classes
+//compiled
+class Shader{
+    source: SourceFile;
+    shader: WebGLShader;
+    type: shaderType;
+    constructor(gl:WebGL2RenderingContext,type: shaderType, source: SourceFile){
+        const shader = gl.createShader(type);
+        if (!shader) {
+            throw new Error(`Failed to create shader of type ${toShaderTypeString(type)}`);
+        }
+        this.shader = shader;
+        this.type = type;
+        this.source = source;
+        gl.shaderSource(shader, source.content);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.error(gl.getShaderInfoLog(shader));
+            throw new Error("Shader compile failed");
+        }
+    }
+}
+//shaderdb stores compiled shaders and reuses instead of compiling them again
+class ShaderDB {
+    shaders: Map<string, Shader> = new Map();
+    gl: WebGL2RenderingContext;
+    constructor(gl: WebGL2RenderingContext) {
+        this.gl = gl;
+    }
+    getShader(type: shaderType, source: SourceFile): Shader {
+        const key = `${toShaderTypeString(type)}:${source.filename}`;
+        if (this.shaders.has(key)) {
+            return this.shaders.get(key)!;
+        }
+        const shader = new Shader(this.gl, type, source);
+        this.shaders.set(key, shader);
+        return shader;
+    }
+    deleteAll(): void {
+        this.shaders.forEach((shader) => {
+            this.gl.deleteShader(shader.shader);
+        });
+        this.shaders.clear();
+    }
+}
+class Program {
+    program: WebGLProgram;
+    gl: WebGL2RenderingContext;
+    vs: Shader;
+    fs: Shader;
+    constructor(gl: WebGL2RenderingContext, shdb: ShaderDB, vs: SourceFile, fs: SourceFile) {
+        this.gl = gl;
+        this.vs = shdb.getShader(gl.VERTEX_SHADER, vs);
+        this.fs = shdb.getShader(gl.FRAGMENT_SHADER, fs);
+        this.program = gl.createProgram();
+        if (!this.program) {
+            throw new Error("Failed to create program");
+        }
+        gl.attachShader(this.program, this.vs.shader);
+        gl.attachShader(this.program, this.fs.shader);
+        gl.linkProgram(this.program);
+        if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
+            console.error(gl.getProgramInfoLog(this.program));
+            throw new Error("Program link failed");
+        }
+    }
+    use(): void {
+        this.gl.useProgram(this.program);
+    }
+    getUniformLocation(name: string): WebGLUniformLocation | null {
+        return this.gl.getUniformLocation(this.program, name);
+    }
+    getAttribLocation(name: string): number {
+        const location = this.gl.getAttribLocation(this.program, name);
+        if (location === -1) {
+            throw new Error(`Attribute ${name} not found in program`);
+        }
+        return location;
+    }
+}
+class ProgramDB {
+    programs: Map<string, Program> = new Map();
+    gl: WebGL2RenderingContext;
+    shdb: ShaderDB;
+    constructor(gl: WebGL2RenderingContext, shdb: ShaderDB) {
+        this.gl = gl;
+        this.shdb = shdb;
+    }
+    getProgram(vs: SourceFile, fs: SourceFile): Program {
+        const key = `${vs.filename}:${fs.filename}`;
+        if (this.programs.has(key)) {
+            return this.programs.get(key)!;
+        }
+        const program = new Program(this.gl, this.shdb, vs, fs);
+        this.programs.set(key, program);
+        return program;
+    }
+    deleteAll(): void {
+        this.programs.forEach((program) => {
+            this.gl.deleteProgram(program.program);
+        });
+        this.programs.clear();
+    }
+}
+
+
+
+
+//MARK: main (onload)
 window.onload = () => {
 Promise.all([openFile("src/vert.glsl"), openFile("src/frag.glsl"), openImage("mandelbrot_set.jpg")]).then(([vertexShaderSource, fragmentShaderSource, mandelbrot]) => {
     
     const canvas = document.getElementById('glCanvas') as HTMLCanvasElement;
     const gl = canvas.getContext('webgl2')!;
     if (!gl) throw new Error('WebGL not supported');
+    
+    const shaderDB = new ShaderDB(gl);
+    const programDB = new ProgramDB(gl, shaderDB);
     
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -317,11 +462,11 @@ Promise.all([openFile("src/vert.glsl"), openFile("src/frag.glsl"), openImage("ma
         let up = new Vec3d(0, 1, 0);
         let vMatrix = lookAt(eye, target, up);
         
-        const viewLocation = gl.getUniformLocation(program, "view");
+        const viewLocation = program.getUniformLocation("view");
         gl.uniformMatrix4fv(viewLocation, false, vMatrix);
 
         let pMatrix = perspective(1.5*Math.PI, window.innerWidth/window.innerHeight, 0.000001, 1000000)
-        const perspectiveLocation = gl.getUniformLocation(program, "perspective");
+        const perspectiveLocation = program.getUniformLocation("perspective");
         gl.uniformMatrix4fv(perspectiveLocation, false, pMatrix);
 
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -330,23 +475,9 @@ Promise.all([openFile("src/vert.glsl"), openFile("src/frag.glsl"), openImage("ma
         requestAnimationFrame(redraw);
     }
     
-    let program = gl.createProgram();
+    const program = programDB.getProgram(vertexShaderSource, fragmentShaderSource);
+    program.use();
 
-    let vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
-    gl.shaderSource(vertexShader, vertexShaderSource);
-    gl.compileShader(vertexShader);
-    if(!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) console.log(gl.getShaderInfoLog(vertexShader));
-    
-    let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
-    gl.shaderSource(fragmentShader, fragmentShaderSource);
-    gl.compileShader(fragmentShader);
-    if(!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) console.log(gl.getShaderInfoLog(fragmentShader));
-
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-
-    gl.linkProgram(program);
-    gl.useProgram(program);
 
     const vertices = new Float32Array([
         0, 0, 0, 0,
@@ -390,7 +521,7 @@ Promise.all([openFile("src/vert.glsl"), openFile("src/frag.glsl"), openImage("ma
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-    const samplerLocation = gl.getUniformLocation(program, "sampler");
+    const samplerLocation = program.getUniformLocation("sampler");
     gl.uniform1i(samplerLocation, 0);
 
     redraw();
