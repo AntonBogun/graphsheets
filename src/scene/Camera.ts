@@ -25,13 +25,16 @@ export class Camera {
         this.transformationMatrix = this.getTransformationMatrix();
         this.bindEventListeners();
     }
-    
+    x = Date.now();
     public getTransformationMatrix(): TransformationMatrix {
         let eye = new Vec3d(this.position.x, this.position.y, this.z_value);
         let target = new Vec3d(this.position.x, this.position.y, -this.z_value);
         let up = new Vec3d(0, 1, 0);
         let vMatrix = TransformationMatrix.lookAt(eye, target, up);
-        let pMatrix = TransformationMatrix.perspective(1.5*Math.PI, window.innerWidth/window.innerHeight, 0.000001, 1000000);
+        // let pMatrix = TransformationMatrix.perspective(1.5*Math.PI, window.innerWidth/window.innerHeight, 0.000001, 1000000);
+        // let pMatrix = TransformationMatrix.orthogonal(1/this.z_value, 1/this.z_value, 0.000001, 1000000);
+        let pMatrix = TransformationMatrix.sId((Date.now() - this.x) * 100);
+        console.log((Date.now() - this.x) * 100);
         this.transformationMatrix = pMatrix.mul(vMatrix);
         return this.transformationMatrix;
     }
@@ -41,7 +44,7 @@ export class Camera {
         let target = new Vec3d(this.position.x, this.position.y, -this.z_value);
         let up = new Vec3d(0, 1, 0);
         let vMatrix = TransformationMatrix.inverseLookAt(eye, target, up);
-        let pMatrix = TransformationMatrix.inversePerspective(1.5*Math.PI, window.innerWidth/window.innerHeight, 0.000001, 1000000);
+        let pMatrix = TransformationMatrix.inverseOrthogonal(1/this.z_value, 1/this.z_value, 0.000001, 1000000);
         return vMatrix.mul(pMatrix);
     }
 

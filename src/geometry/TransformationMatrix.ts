@@ -63,6 +63,33 @@ export class TransformationMatrix {
         ]);
     }
 
+    static orthogonal(width: number, height: number, near: number, far: number): TransformationMatrix {
+        return new TransformationMatrix([
+            1 / width, 0, 0, 0,
+            0, 1 / height, 0, 0,
+            0, 0, -2 / (far - near), -(far + near) / (far - near),
+            0, 0, 0, 1
+        ]);
+    }
+
+    static sId(scalar: number): TransformationMatrix {
+        return new TransformationMatrix([
+            scalar, 0, 0, 0,
+            0, scalar, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ]);
+    }
+
+    static inverseOrthogonal(width: number, height: number, near: number, far: number): TransformationMatrix {
+        return new TransformationMatrix([
+            width, 0, 0, 0,
+            0, height, 0, 0,
+            0, 0, - (far - near) / 2, -(far + near) / 2,
+            0, 0, 0, 1
+        ]);
+    }
+
     static perspective(fov: number, aspectRatio: number, near: number, far: number): TransformationMatrix {
 
     const f = 1.0 / Math.tan(fov / 2);
