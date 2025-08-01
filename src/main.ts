@@ -4,6 +4,9 @@ import { ShaderDB } from "./shaders/ShaderDB.js";
 import { ProgramDB } from "./shaders/ProgramDB.js";
 import { TextureDB } from "./shaders/TextureDB.js";
 import { Camera } from "./scene/Camera.js";
+import { RenderQueue } from "./shaders/RenderQueue.js";
+import { Sprite } from "./shaders/Sprite.js";
+import { Vec2d } from "./geometry/Vec2d.js";
 window.onload = () => {
 Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shaders/sources/frag.glsl"), IO.openImage("mandelbrot_set.jpg")]).then(([vertexShaderSource, fragmentShaderSource, mandelbrot]) => {
     
@@ -48,7 +51,30 @@ Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shad
             }
         }
     }
-    let print_= new PrintWithRateLimit(250);
+    class FPSLog{
+        private lastTime: number;
+        private frameCount: number;
+        private fps: number;
+
+        constructor() {
+            this.lastTime = Date.now();
+            this.frameCount = 0;
+            this.fps = 0;
+        }
+
+        update(): void {
+            this.frameCount++;
+            const now = Date.now();
+            if (now - this.lastTime >= 1000) {
+                this.fps = this.frameCount;
+                this.frameCount = 0;
+                this.lastTime = now;
+                console.log(`FPS: ${this.fps}`);
+            }
+        }
+    }
+    let print_ = new PrintWithRateLimit(250);
+    let fpsLog = new FPSLog();
 
     const canvas = document.getElementById('glCanvas') as HTMLCanvasElement;
     const gl = canvas.getContext('webgl2')!;
@@ -83,54 +109,22 @@ Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shad
 
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
-        gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_INT, 0);
+        renderQueue.renderByProgram(gl, cam.getTransformationMatrix().transpose());
+        // gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, 0);
+
         requestAnimationFrame(redraw);
+        fpsLog.update();
     }
     
     const program = programDB.getProgram(vertexShaderSource, fragmentShaderSource);
     program.use();
-
-
-    const vertices = new Float32Array([
-        0, 0, 0, 0,
-        0, 1, 0, 1,
-        1, 0, 1, 0,
-        1, 1, 1, 1
-    ]);
-
-    const indices = new Uint32Array([
-        0, 1, 3,
-        0, 3, 2
-    ]);
-
-    const VAO = gl.createVertexArray();
-
-    gl.bindVertexArray(VAO);
-
-    const VBO = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, VBO);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-
-
-    const EBO = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, EBO);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 16, 0);
-
-    gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 16, 8);
-
-    gl.activeTexture(gl.TEXTURE1);
-
     const texture = textureDB.getTexture(mandelbrot);
+    const renderQueue = new RenderQueue();
+    const sprite1 = new Sprite(gl,program, texture);
+    const sprite2 = new Sprite(gl,program, texture, new Vec2d(0.5, 0.5), new Vec2d(0.5, 0.5));
+    renderQueue.add(sprite1);
+    renderQueue.add(sprite2);
 
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, texture.texture);
-
-    const samplerLocation = program.getUniformLocation("sampler");
-    gl.uniform1i(samplerLocation, 0);
 
     redraw();
 });

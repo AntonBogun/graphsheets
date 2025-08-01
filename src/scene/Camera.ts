@@ -153,7 +153,6 @@ export class Camera {
                     this.getInverseTransformationMatrix(),
                     new Vec4d(mouse_position.x, mouse_position.y, 0, 1)
                 );
-                console.log(world_mouse_position);
                 world_mouse_position = Vec4d.smul(world_mouse_position,(1.0/world_mouse_position.w));
                 let world_mouse_position3 = new Vec3d(world_mouse_position.x, world_mouse_position.y, 0);
                 // console.log(world_mouse_position3);

@@ -1,5 +1,6 @@
 import { Shader } from "../shaders/Shader.js";
 import { Program } from "../shaders/Program.js";
+import { TransformationMatrix } from "../geometry/TransformationMatrix.js";
 export abstract class RenderObject {
     public program: Program;
     
@@ -7,10 +8,11 @@ export abstract class RenderObject {
         this.program = program;
     }
     
-    abstract render(gl: WebGLRenderingContext): void;
+    abstract render(gl: WebGL2RenderingContext,viewTransform:TransformationMatrix): void;
     
-    draw(gl: WebGLRenderingContext) {
+    draw(gl: WebGL2RenderingContext,viewTransform:TransformationMatrix): void {
         this.program.use();
-        this.render(gl);
+        this.render(gl,viewTransform);
     }
+    abstract destroy(gl: WebGL2RenderingContext): void;
 }
