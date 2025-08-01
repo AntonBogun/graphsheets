@@ -14,12 +14,13 @@ export class TransformationMatrix {
         const b = other.matrix;
 
         const result = new Float32Array(16);
-        for (let i = 0; i < 4; i++) {//column
-            for (let j = 0; j < 4; j++) {//row
-                result[i * 4 + j] = a[i * 4 + 0] * b[0 * 4 + j] +
-                                    a[i * 4 + 1] * b[1 * 4 + j] +
-                                    a[i * 4 + 2] * b[2 * 4 + j] +
-                                    a[i * 4 + 3] * b[3 * 4 + j];
+        for (let i = 0; i < 4; i++) {
+            for (let j = 0; j < 4; j++) {
+                let sum = 0;
+                for (let k = 0; k < 4; k++) {
+                    sum += a[i * 4 + k] * b[k * 4 + j];
+                }
+                result[i * 4 + j] = sum;
             }
         }
         return new TransformationMatrix(result);
@@ -33,12 +34,13 @@ export class TransformationMatrix {
         const yAxis = Vec3d.crossProduct(zAxis, xAxis);
 
         return new TransformationMatrix([
-            xAxis.x,  yAxis.x,  zAxis.x,  -Vec3d.dot(xAxis, eye),
-            xAxis.y,  yAxis.y,  zAxis.y,  -Vec3d.dot(yAxis, eye),
-            xAxis.z,  yAxis.z,  zAxis.z,  -Vec3d.dot(zAxis, eye),
-            0, 0, 0, 1
+            xAxis.x,  yAxis.x,  zAxis.x, -Vec3d.dot(xAxis, eye),
+            xAxis.y,  yAxis.y,  zAxis.y, -Vec3d.dot(yAxis, eye),
+            xAxis.z,  yAxis.z,  zAxis.z, -Vec3d.dot(zAxis, eye),
+            0,        0,        0,        1
         ]);
     }
+
     static id(): TransformationMatrix {
         return new TransformationMatrix([
             1, 0, 0, 0,
@@ -57,7 +59,7 @@ export class TransformationMatrix {
             xAxis.x, xAxis.y, xAxis.z, eye.x,
             yAxis.x, yAxis.y, yAxis.z, eye.y,
             zAxis.x, zAxis.y, zAxis.z, eye.z,
-            0,   0,   0,   1
+            0, 0, 0, 1
         ]);
     }
 
@@ -74,20 +76,16 @@ export class TransformationMatrix {
     ]);
     }
 
+    // Using row-major order, inverse of perspective matrix
     static inversePerspective(fov: number, aspectRatio: number, near: number, far: number): TransformationMatrix {
-        const f = 1.0 / Math.tan(fov / 2);
+        const f = Math.tan(fov / 2);
         const rangeInv = 1 / (near - far);
 
-        const A = f / aspectRatio;
-        const B = f;
-        const C = (near + far) * rangeInv;
-        const D = near * far * rangeInv * 2;
-        
         return new TransformationMatrix([
-            1/A,   0,    0,    0,
-            0,   1/B,    0,    0,
-            0,     0,    0,  1/D,
-            0,     0,   -1,  C/D
+            f * aspectRatio, 0, 0, 0,
+            0, f, 0, 0,
+            0, 0, 0, -1,
+            0, 0, (near - far) / (2 * near * far), (near + far) / (2 * near * far)
         ]);
     }
 

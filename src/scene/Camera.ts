@@ -1,5 +1,6 @@
 import { Vec2d } from "../geometry/Vec2d.js";
 import { Vec3d } from "../geometry/Vec3d.js";
+import { Vec4d } from "../geometry/Vec4d.js";
 import { TransformationMatrix } from "../geometry/TransformationMatrix.js";
 export class Camera {
     private z_value;
@@ -33,6 +34,15 @@ export class Camera {
         let pMatrix = TransformationMatrix.perspective(1.5*Math.PI, window.innerWidth/window.innerHeight, 0.000001, 1000000);
         this.transformationMatrix = pMatrix.mul(vMatrix);
         return this.transformationMatrix;
+    }
+
+    public getInverseTransformationMatrix(): TransformationMatrix {
+        let eye = new Vec3d(this.position.x, this.position.y, this.z_value);
+        let target = new Vec3d(this.position.x, this.position.y, -this.z_value);
+        let up = new Vec3d(0, 1, 0);
+        let vMatrix = TransformationMatrix.inverseLookAt(eye, target, up);
+        let pMatrix = TransformationMatrix.inversePerspective(1.5*Math.PI, window.innerWidth/window.innerHeight, 0.000001, 1000000);
+        return vMatrix.mul(pMatrix);
     }
 
     public bindEventListeners(): void {
@@ -137,16 +147,15 @@ export class Camera {
                 event.preventDefault();
                 let mouse_position = new Vec2d(2*(event.clientX - (window.innerWidth / 2)) / window.innerWidth, 
                                                 2*((window.innerHeight-event.clientY) - (window.innerHeight / 2)) / window.innerHeight);
-                let world_mouse_position = Vec3d.mmul(
-                    TransformationMatrix.inversePerspective(1.5*Math.PI, window.innerWidth/window.innerHeight, 0.000001, 1000000),
-                    new Vec3d(mouse_position.x, mouse_position.y, 0)
+                let world_mouse_position = Vec4d.mmul(
+                    this.getInverseTransformationMatrix(),
+                    new Vec4d(mouse_position.x, mouse_position.y, 0, 1)
                 );
-                world_mouse_position = Vec3d.mmul(
-                    TransformationMatrix.inverseLookAt(new Vec3d(this.position.x, this.position.y, this.z_value), new Vec3d(this.position.x, this.position.y, -1), new Vec3d(0, 1, 0)),
-                    world_mouse_position
-                );
+                world_mouse_position = Vec4d.smul(world_mouse_position,(1.0/world_mouse_position.w));
+                let world_mouse_position3 = new Vec3d(world_mouse_position.x, world_mouse_position.y, world_mouse_position.z);
+                
                 let delta = Vec2d.dot(new Vec2d(event.deltaX, event.deltaY), new Vec2d(1,1))/(event.ctrlKey?50:100);
-                let position_to_mouse = Vec3d.normalize(Vec3d.sub(world_mouse_position, new Vec3d(this.position.x, this.position.y, this.z_value)));
+                let position_to_mouse = Vec3d.normalize(Vec3d.sub(world_mouse_position3, new Vec3d(this.position.x, this.position.y, this.z_value)));
                 let xzslope = position_to_mouse.x / position_to_mouse.z;
                 let yzslope = position_to_mouse.y / position_to_mouse.z;
                 if(this.z_value * 2**delta > -1){

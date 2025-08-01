@@ -13,12 +13,12 @@ def print_ts_files(input_dir: str):
     # Walk through the directory tree
     for root, _, files in os.walk(input_path):
         for file in files:
-            if file.endswith(".ts"):
+            if file.endswith(".js"):
                 print(Path(root).joinpath(file).relative_to(input_path.parent))
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Print all .ts files in a directory recursively.")
+    parser = argparse.ArgumentParser(description="Print all .js files in a directory recursively.")
     parser.add_argument("input_dir", help="Input directory to scan recursively")
     args = parser.parse_args()
 

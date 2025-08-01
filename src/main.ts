@@ -2,6 +2,7 @@
 import { IO } from "./files/io.js";
 import { ShaderDB } from "./shaders/ShaderDB.js";
 import { ProgramDB } from "./shaders/ProgramDB.js";
+import { TextureDB } from "./shaders/TextureDB.js";
 import { Camera } from "./scene/Camera.js";
 window.onload = () => {
 Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shaders/sources/frag.glsl"), IO.openImage("mandelbrot_set.jpg")]).then(([vertexShaderSource, fragmentShaderSource, mandelbrot]) => {
@@ -55,6 +56,7 @@ Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shad
     
     const shaderDB = new ShaderDB(gl);
     const programDB = new ProgramDB(gl, shaderDB);
+    const textureDB = new TextureDB(gl);
     
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -68,6 +70,7 @@ Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shad
     const cam = new Camera();
 
     function redraw(): void {
+        // console.log(cam.getTransformationMatrix().mul(cam.getInverseTransformationMatrix()));
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         gl.viewport(0, 0, window.innerWidth, window.innerHeight);
@@ -76,7 +79,7 @@ Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shad
         gl.uniformMatrix4fv(transformLocation, false, cam.getTransformationMatrix().transpose().matrix);
 
         print_.print(`Matrix:\n${printMatrix(cam.getTransformationMatrix().matrix)}`);
-        print_.printChained(`vertexShaderSource:\n${vertexShaderSource.content}`);
+        print_.printChained(`${cam.getTransformationMatrix().matrix[15]}`);
 
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
@@ -119,16 +122,12 @@ Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shad
     gl.enableVertexAttribArray(1);
     gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 16, 8);
 
-    const textureBuffer = gl.createTexture();
-    gl.activeTexture(gl.TEXTURE0);
+    gl.activeTexture(gl.TEXTURE1);
 
-    gl.bindTexture(gl.TEXTURE_2D, textureBuffer);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mandelbrot);
-    
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    const texture = textureDB.getTexture(mandelbrot);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture.texture);
 
     const samplerLocation = program.getUniformLocation("sampler");
     gl.uniform1i(samplerLocation, 0);

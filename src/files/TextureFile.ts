@@ -1,4 +1,4 @@
-class TextureFile {
+export class TextureFile {
     constructor(
         public filename: string,
         public image: HTMLImageElement

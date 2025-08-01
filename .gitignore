@@ -43,4 +43,4 @@ package-lock.json
 _*
 main.js
 old/**
-src/**/*.js
+compile/

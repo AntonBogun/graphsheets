@@ -11,15 +11,6 @@ export class Vec3d {
     static sub(a: Vec3d, b: Vec3d): Vec3d {
         return new Vec3d(a.x - b.x, a.y - b.y, a.z - b.z);
     }
-    
-    static mmul(a_: TransformationMatrix, b: Vec3d): Vec3d {
-        const a= a_.matrix;
-        return new Vec3d(
-            a[0] * b.x + a[4] * b.y + a[8] * b.z + a[12],
-            a[1] * b.x + a[5] * b.y + a[9] * b.z + a[13],
-            a[2] * b.x + a[6] * b.y + a[10] * b.z + a[14]
-        );
-    }
     static normalize(v: Vec3d): Vec3d {
         const len = Math.hypot(v.x, v.y, v.z);
         return len > 0 ? Vec3d.sdiv(v, len) : new Vec3d(0, 0, 1);

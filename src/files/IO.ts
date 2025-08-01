@@ -1,4 +1,5 @@
 import { SourceFile } from "./SourceFile.js";
+import { TextureFile } from "./TextureFile.js";
 export class IO {
     static openFile(filename: string): Promise<SourceFile> {
  
@@ -9,12 +10,11 @@ export class IO {
         });
     }
 
-
-    static openImage(filename: string): Promise<HTMLImageElement> {
+    static openImage(filename: string): Promise<TextureFile> {
         return new Promise((resolve, reject) => {
             let img = new Image();
             img.onload = () => {
-                resolve(img);
+                resolve(new TextureFile(filename, img));
             }
             img.onerror = (x) => {
                 reject(new Error(x.toString()));
