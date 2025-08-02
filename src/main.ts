@@ -1,7 +1,5 @@
 "use strict";
 import { IO } from "./files/io.js";
-import { ShaderDB } from "./shaders/ShaderDB.js";
-import { ProgramDB } from "./shaders/ProgramDB.js";
 import { TextureDB } from "./shaders/TextureDB.js";
 import { Camera } from "./scene/Camera.js";
 import { RenderManager } from "./scene/RenderManager.js";
@@ -9,8 +7,14 @@ import { SpriteComponent } from "./scene/components/SpriteComponent.js";
 import { Vec2d } from "./geometry/Vec2d.js";
 import { State } from "./State.js";
 import { Scene } from "./scene/Scene.js";
+import { ProgramManager } from "./shaders/ProgramManager.js";
 window.onload = () => {
-Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shaders/sources/frag.glsl"), IO.openImage("mandelbrot_set.jpg")]).then(([vertexShaderSource, fragmentShaderSource, mandelbrot]) => {
+const canvas = document.getElementById('glCanvas') as HTMLCanvasElement;
+const gl = canvas.getContext('webgl2')!;
+if (!gl) throw new Error('WebGL not supported');
+State.currentGraphicsContext = gl;
+
+Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg")]).then(([_, mandelbrot]) => {
     
     function printMatrix(m: number[]|Float32Array): string {
         let str = '';
@@ -77,15 +81,6 @@ Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shad
     }
     let print_ = new PrintWithRateLimit(250);
     let fpsLog = new FPSLog();
-
-    const canvas = document.getElementById('glCanvas') as HTMLCanvasElement;
-    const gl = canvas.getContext('webgl2')!;
-    if (!gl) throw new Error('WebGL not supported');
-    State.currentGraphicsContext = gl;
-    
-    const shaderDB = new ShaderDB(gl);
-    const programDB = new ProgramDB(gl, shaderDB);
-    const textureDB = new TextureDB(gl);
     
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -105,27 +100,21 @@ Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shad
         canvas.height = window.innerHeight;
         gl.viewport(0, 0, window.innerWidth, window.innerHeight);
 
-        const transformLocation = program.getUniformLocation("transform");
-        gl.uniformMatrix4fv(transformLocation, false, cam.getTransformationMatrix().transpose().matrix);
-
-        print_.print(`Matrix:\n${printMatrix(cam.getTransformationMatrix().matrix)}`);
-        print_.printChained(`${cam.getTransformationMatrix().matrix[15]}`);
-
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
+
         RenderManager.getRenderManager().renderByProgram();
+
         // gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, 0);
 
         requestAnimationFrame(redraw);
         fpsLog.update();
     }
     
-    const program = programDB.getProgram(vertexShaderSource, fragmentShaderSource);
-    program.use();
-    const texture = textureDB.getTexture(mandelbrot);
+    const texture = TextureDB.getTextureDB().getTexture(mandelbrot);
     const scene = new Scene([]);
-    const sprite1 = new SpriteComponent(program, texture);
-    const sprite2 = new SpriteComponent(program, texture, new Vec2d(0.5, 0.5), new Vec2d(0.5, 0.5));
+    const sprite1 = new SpriteComponent(texture);
+    const sprite2 = new SpriteComponent(texture, new Vec2d(0.5, 0.5), new Vec2d(0.5, 0.5));
     scene.addComponent(sprite1);
     scene.addComponent(sprite2);
     scene.display();

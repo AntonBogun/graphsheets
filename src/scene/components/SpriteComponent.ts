@@ -1,10 +1,12 @@
-import { RenderableComponent } from "./RenderableComponent.js";
+import { IRenderable } from "../../shaders/IRenderable.js";
 import { Program } from "../../shaders/Program.js";
 import { Vec2d } from "../../geometry/Vec2d.js";
 import { Texture } from "../../shaders/Texture.js";
 import { TransformationMatrix } from "../../geometry/TransformationMatrix.js";
 import { State } from "../../State.js";
-export class SpriteComponent extends RenderableComponent {
+import { ProgramDB } from "../../shaders/ProgramDB.js";
+export class SpriteComponent implements IRenderable<"basic"> {
+    public renderingType: "basic" = "basic";
     private position: Vec2d;
     private size: Vec2d;
     private texture: Texture; // Your texture type
@@ -13,12 +15,10 @@ export class SpriteComponent extends RenderableComponent {
     private EBO: WebGLBuffer;
 
     constructor(
-        program: Program,
         texture: Texture,
         position: Vec2d = new Vec2d(0, 0),
         size: Vec2d = new Vec2d(1, 1),
     ) {
-        super(program);
         this.position = position;
         this.size = size;
         this.texture = texture;
@@ -61,11 +61,10 @@ export class SpriteComponent extends RenderableComponent {
     }
 
     public render(viewTransform: TransformationMatrix): void {
-
         const gl = State.currentGraphicsContext!;
 
         // Set uniforms
-        const transformLocation = this.program.getUniformLocation("transform");
+        const transformLocation = ProgramDB.getProgram(this).getUniformLocation("transform");
 
         gl.uniformMatrix4fv(transformLocation, false, viewTransform.matrix);
 
@@ -73,7 +72,7 @@ export class SpriteComponent extends RenderableComponent {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.texture.texture);
         
-        const samplerLocation = this.program.getUniformLocation("sampler");
+        const samplerLocation = ProgramDB.getProgram(this).getUniformLocation("sampler");
         gl.uniform1i(samplerLocation, 0);
         
         // Draw

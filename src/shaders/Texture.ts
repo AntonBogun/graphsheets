@@ -1,11 +1,10 @@
 import { TextureFile } from "../files/TextureFile.js";
-type WebGLVertexShader = WebGL2RenderingContext['VERTEX_SHADER'];
-type WebGLFragmentShader = WebGL2RenderingContext['FRAGMENT_SHADER'];
-export type shaderType = WebGLVertexShader | WebGLFragmentShader;
+import { State } from "../State.js";
 export class Texture{
     source: TextureFile;
     texture: WebGLTexture;
-    constructor(gl:WebGL2RenderingContext,source: TextureFile){
+    constructor(source: TextureFile){
+        const gl = State.currentGraphicsContext!;
         const texture = gl.createTexture();
         if (!texture) {
             throw new Error("Failed to create texture");

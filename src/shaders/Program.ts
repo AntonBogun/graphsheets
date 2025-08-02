@@ -1,35 +1,42 @@
 import { ShaderDB } from "../shaders/ShaderDB.js";
 import { SourceFile } from "../files/SourceFile.js";
-import { Shader, shaderType } from "../shaders/Shader.js";
+import { Shader, shaderType } from "../shaders/shader.js";
+import { State } from "../State.js";
 export class Program {
     program: WebGLProgram;
-    gl: WebGL2RenderingContext;
-    vs: Shader;
-    fs: Shader;
-    constructor(gl: WebGL2RenderingContext, shdb: ShaderDB, vs: SourceFile, fs: SourceFile) {
-        this.gl = gl;
-        this.vs = shdb.getShader(gl.VERTEX_SHADER, vs);
-        this.fs = shdb.getShader(gl.FRAGMENT_SHADER, fs);
-        this.program = gl.createProgram();
-        if (!this.program) {
-            throw new Error("Failed to create program");
-        }
-        gl.attachShader(this.program, this.vs.shader);
-        gl.attachShader(this.program, this.fs.shader);
-        gl.linkProgram(this.program);
-        if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
-            console.error(gl.getProgramInfoLog(this.program));
-            throw new Error("Program link failed");
-        }
+    vertexShader: Shader;
+    fragmentShader: Shader;
+
+    constructor(program: WebGLProgram, vertexShader: Shader, fragmentShader: Shader) {
+        this.program = program;
+        this.vertexShader = vertexShader;
+        this.fragmentShader = fragmentShader;
     }
+
+    static loadProgram(vertexShaderPath: string, fragmentShaderPath: string): Promise<Program> {
+        const gl = State.currentGraphicsContext!;
+        let vertexShader = Shader.loadShader(gl.VERTEX_SHADER, vertexShaderPath);
+        let fragmentShader = Shader.loadShader(gl.FRAGMENT_SHADER, fragmentShaderPath);//("FRAGMENT_SHADER", fragmentShaderPath);
+        return Promise.all([vertexShader, fragmentShader]).then(([vertexShader, fragmentShader]) => {
+            let program = gl.createProgram();
+            gl.attachShader(program, vertexShader.shader);
+            gl.attachShader(program, fragmentShader.shader);
+            gl.linkProgram(program);
+            return new Program(program, vertexShader, fragmentShader);
+        });
+
+    }
+
     use(): void {
-        this.gl.useProgram(this.program);
+        State.currentGraphicsContext!.useProgram(this.program);
     }
+
     getUniformLocation(name: string): WebGLUniformLocation | null {
-        return this.gl.getUniformLocation(this.program, name);
+        return State.currentGraphicsContext!.getUniformLocation(this.program, name);
     }
+
     getAttribLocation(name: string): number {
-        const location = this.gl.getAttribLocation(this.program, name);
+        const location = State.currentGraphicsContext!.getAttribLocation(this.program, name);
         if (location === -1) {
             throw new Error(`Attribute ${name} not found in program`);
         }

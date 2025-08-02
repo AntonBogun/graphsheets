@@ -1,25 +1,23 @@
-import { Shader } from "../shaders/Shader.js";
-import { SourceFile } from "../files/SourceFile.js";
-import { shaderType } from "../shaders/Shader.js";
+import { Shader } from "./shader.js";
+import { ProgramTypeAssociation } from "./ProgramType.js";
 export class ShaderDB {
     shaders: Map<string, Shader> = new Map();
-    gl: WebGL2RenderingContext;
-    constructor(gl: WebGL2RenderingContext) {
-        this.gl = gl;
+
+    private static shaderDB: ShaderDB;
+    static getShaderDB() {
+        if (!ShaderDB.shaderDB) ShaderDB.shaderDB = new ShaderDB();
+        return ShaderDB.shaderDB;
     }
-    getShader(type: shaderType, source: SourceFile): Shader {
-        const key = `${Shader.toShaderTypeString(type)}:${source.filename}`;
-        if (this.shaders.has(key)) {
-            return this.shaders.get(key)!;
+
+    registerShader(path: string, shader: Shader) {
+        this.shaders.set(path, shader);
+    }
+
+    getShader(filename: string) {
+        if (!this.shaders.has(filename)) {
+            return null;
         }
-        const shader = new Shader(this.gl, type, source);
-        this.shaders.set(key, shader);
-        return shader;
+        return this.shaders.get(filename)!;
     }
-    deleteAll(): void {
-        this.shaders.forEach((shader) => {
-            this.gl.deleteShader(shader.shader);
-        });
-        this.shaders.clear();
-    }
+
 }

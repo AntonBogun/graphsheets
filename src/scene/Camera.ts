@@ -13,6 +13,8 @@ export class Camera {
     private touch_initial_position: Vec2d;
     private touch_last_position: Vec2d;
     private transformationMatrix: TransformationMatrix;
+    private inverseTransformationMatrix: TransformationMatrix;
+    // private isViewDirty: boolean;
 
     constructor() {
         this.zoom_value = 1.0;
@@ -24,22 +26,36 @@ export class Camera {
         this.touch_initial_position = new Vec2d(0, 0);
         this.touch_last_position = new Vec2d(0, 0);
         this.transformationMatrix = this.getTransformationMatrix();
+        this.inverseTransformationMatrix = this.getInverseTransformationMatrix();
         this.bindEventListeners();
         State.currentCamera = this;
+        // this.isViewDirty = true;
     }
     
+    // public setDirtyView() {
+    //     this.isViewDirty = true;
+    // }
+
     public getTransformationMatrix(): TransformationMatrix {
+        // if (!this.isViewDirty) {
+        //     return this.transformationMatrix;
+        // }
         let eye = new Vec3d(this.position.x, this.position.y, this.zoom_value);
         let target = new Vec3d(this.position.x, this.position.y, -1);
         let up = new Vec3d(0, 1, 0);
         let vMatrix = TransformationMatrix.lookAt(eye, target, up);
         // let pMatrix = TransformationMatrix.perspective(1.5*Math.PI, window.innerWidth/window.innerHeight, 0, 1e6);
         let pMatrix = TransformationMatrix.orthogonal(10*this.zoom_value*window.innerWidth/window.innerHeight, 10*this.zoom_value, 0, 1e6);
-        this.transformationMatrix = pMatrix.mul(vMatrix);
+        // this.transformationMatrix = pMatrix.mul(vMatrix);
+        // this.inverseTransformationMatrix = this.getInverseTransformationMatrix();
+        // this.isViewDirty = false;
         return this.transformationMatrix;
     }
 
     public getInverseTransformationMatrix(): TransformationMatrix {
+        // if (!this.isViewDirty) {
+        //     return this.inverseTransformationMatrix;
+        // }
         let eye = new Vec3d(this.position.x, this.position.y, this.zoom_value);
         let target = new Vec3d(this.position.x, this.position.y, -1);
         let up = new Vec3d(0, 1, 0);
@@ -53,7 +69,6 @@ export class Camera {
         //MARK: Event Listeners
 
         document.onmousedown = (event) => {
-            console.log(this);
             this.is_dragging = true;
             const e_pos = new Vec2d(event.pageX, -event.pageY);
             this.initial_position = e_pos;

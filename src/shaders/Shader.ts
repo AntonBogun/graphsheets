@@ -1,35 +1,41 @@
-import { SourceFile } from "../files/SourceFile.js";
+import { State } from "../State.js";
+import { ShaderDB } from "./ShaderDB.js";
 type WebGLVertexShader = WebGL2RenderingContext['VERTEX_SHADER'];
 type WebGLFragmentShader = WebGL2RenderingContext['FRAGMENT_SHADER'];
 export type shaderType = WebGLVertexShader | WebGLFragmentShader;
 export class Shader{
-    source: SourceFile;
     shader: WebGLShader;
-    type: shaderType;
-    constructor(gl:WebGL2RenderingContext,type: shaderType, source: SourceFile){
-        const shader = gl.createShader(type);
-        if (!shader) {
-            throw new Error(`Failed to create shader of type ${Shader.toShaderTypeString(type)}`);
+    static loadShader(type: shaderType, path: string): Promise<Shader> {
+        const gl = State.currentGraphicsContext!;
+        const shaderCode = "";
+        if(ShaderDB.getShaderDB().getShader(path)){
+            return Promise.resolve(ShaderDB.getShaderDB().getShader(path)!);
         }
-        this.shader = shader;
-        this.type = type;
-        this.source = source;
-        gl.shaderSource(shader, source.content);
-        gl.compileShader(shader);
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            console.error(gl.getShaderInfoLog(shader));
-            throw new Error("Shader compile failed");
-        }
+        return fetch(path).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to load shader from ${path}`);
+                }
+                return response.text();
+            })
+            .then(code => {
+                const gl = State.currentGraphicsContext!;
+                const shader = gl.createShader(type);
+                if (!shader) {
+                    throw new Error(`Failed to create shader`);
+                }
+                gl.shaderSource(shader, code);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error(gl.getShaderInfoLog(shader));
+                    throw new Error("Shader compile failed");
+                }
+                let S = new Shader(shader);
+                ShaderDB.getShaderDB().registerShader(path, S);
+                return S;
+            });
     }
 
-    static toShaderTypeString(type: shaderType): string {
-        switch(type) {
-            case WebGL2RenderingContext.VERTEX_SHADER:
-                return "VERTEX_SHADER";
-            case WebGL2RenderingContext.FRAGMENT_SHADER:
-                return "FRAGMENT_SHADER";
-            default:
-                throw new Error("Unknown shader type: " + type);
-        }
+    constructor(shader: WebGLShader){
+        this.shader = shader;
     }
 }

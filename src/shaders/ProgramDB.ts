@@ -1,27 +1,28 @@
 import { Program } from "../shaders/Program.js";
-import { ShaderDB } from "../shaders/ShaderDB.js";
-import { SourceFile } from "../files/SourceFile.js";
+import { IRenderable } from "./IRenderable.js";
+import { ProgramTypeAssociation  } from "./ProgramType.js";
 export class ProgramDB {
-    programs: Map<string, Program> = new Map();
-    gl: WebGL2RenderingContext;
-    shdb: ShaderDB;
-    constructor(gl: WebGL2RenderingContext, shdb: ShaderDB) {
-        this.gl = gl;
-        this.shdb = shdb;
+    private programs: Map<ProgramTypeAssociation, Program> = new Map();
+    private static programDB: ProgramDB;
+
+    static getProgramDB() {
+        if(!ProgramDB.programDB) ProgramDB.programDB = new ProgramDB();
+        return ProgramDB.programDB;
     }
-    getProgram(vs: SourceFile, fs: SourceFile): Program {
-        const key = `${vs.filename}:${fs.filename}`;
-        if (this.programs.has(key)) {
-            return this.programs.get(key)!;
+
+    registerProgram(renderingType: ProgramTypeAssociation, program: Program) {
+        this.programs.set(renderingType, program);
+    }
+
+    getProgram(renderingType: ProgramTypeAssociation): Program {
+        if(!this.programs.has(renderingType)){
+            throw new Error(`Rendering program ${renderingType} does not exist!`);
         }
-        const program = new Program(this.gl, this.shdb, vs, fs);
-        this.programs.set(key, program);
-        return program;
+        return this.programs.get(renderingType)!;
     }
-    deleteAll(): void {
-        this.programs.forEach((program) => {
-            this.gl.deleteProgram(program.program);
-        });
-        this.programs.clear();
+
+    public static getProgram<T extends IRenderable<U>, U extends ProgramTypeAssociation>(component: T) {
+        return ProgramDB.getProgramDB().getProgram(component.renderingType);
     }
+
 }

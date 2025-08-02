@@ -1,13 +1,13 @@
-import { RenderableComponent } from "./components/RenderableComponent.js";
+import { IRenderable } from "../shaders/IRenderable.js";
 import { Program } from "../shaders/Program.js";
 import { TransformationMatrix } from "../geometry/TransformationMatrix.js";
 import { State } from "../State.js";
+import { ProgramTypeAssociation, ProgramTypes } from "../shaders/ProgramType.js";
+import { ProgramDB } from "../shaders/ProgramDB.js";
 export class RenderManager {
-    private components: RenderableComponent[];
-    private currentProgram: Program | null;
+    private components: IRenderable<any>[];
     private static renderManager: RenderManager|null;
     private constructor() {
-        this.currentProgram = null;
         this.components = [];
     }
 
@@ -18,18 +18,11 @@ export class RenderManager {
         return this.renderManager;
     }
 
-    public useComponentProgram(component: RenderableComponent): void {
-        if (this.currentProgram !== component.program) {
-            this.currentProgram = component.program;
-            this.currentProgram.use();
-        }
-    }
-
-    public add(...object: RenderableComponent[]): void {
+    public add(...object: IRenderable<any>[]): void {
         this.components.push(...object);
     }
 
-    public remove(object: RenderableComponent){
+    public remove(object: IRenderable<any>){
         // this.components = this.components.filter(component => component !== object);
         const index = this.components.findIndex(component => component === object);
         if (index !== -1) {
@@ -47,7 +40,7 @@ export class RenderManager {
         const gl = State.currentGraphicsContext!;
         const transform = State.currentCamera!.getTransformationMatrix().transpose();
         for (const component of this.components) {
-            this.useComponentProgram(component);
+            ProgramDB.getProgram(component).use();
             component.render(transform);
         }
     }
@@ -58,31 +51,21 @@ export class RenderManager {
 
     // Batch operations for performance
     public renderByProgram(): void {
-        // this.sortItems();
+        for (const type of ProgramTypes) {
+            this.renderByType(type);
+        }
+    }
+
+    public renderByType(type: ProgramTypeAssociation): void {
         const gl = State.currentGraphicsContext!;
         const transform = State.currentCamera!.getTransformationMatrix().transpose();
-        
-        // Group by program to minimize state changes
-        const programGroups = new Map<Program, RenderableComponent[]>();
-        
+        const program = ProgramDB.getProgramDB().getProgram(type);
+        program.use();
         for (const component of this.components) {
-            const program = component.program;
-            if (!programGroups.has(program)) {
-                programGroups.set(program, []);
-            }
-            programGroups.get(program)!.push(component);
-        }
-
-        // Render each program group
-        for (const [program, components] of programGroups) {
-            program.use();
-            
-            for (const component of components) {
-                // Call render directly to avoid redundant program.use() calls
+            if (component.renderingType === type) {
                 component.render(transform);
             }
         }
-        this.currentProgram = null; // Reset current program after rendering
     }
 
     // Debug methods

@@ -1,17 +1,17 @@
-import { RenderableComponent } from "./components/RenderableComponent";
+import { IRenderable } from "../shaders/IRenderable.js";
 import { State } from "../State.js";
 import { RenderManager } from "./RenderManager.js";
 export class Scene {
-    private components: RenderableComponent[];
-    constructor(components: RenderableComponent[]){
+    private components: IRenderable<any>[];
+    constructor(components: IRenderable<any>[]){
         this.components = components;
     }
 
-    public addComponent(component: RenderableComponent): void {
+    public addComponent(component: IRenderable<any>): void {
         this.components.push(component);
     }
 
-    public getComponents(): RenderableComponent[] {
+    public getComponents(): IRenderable<any>[] {
         return this.components;
     }
 
