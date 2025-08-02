@@ -1,10 +1,10 @@
-import { RenderObject } from "./RenderObject.js";
-import { Program } from "../shaders/Program.js";
-import { Vec2d } from "../geometry/Vec2d.js";
-import { Texture } from "../shaders/Texture.js";
-import { TransformationMatrix } from "../geometry/TransformationMatrix.js";
-
-export class Sprite extends RenderObject {
+import { RenderableComponent } from "./RenderableComponent.js";
+import { Program } from "../../shaders/Program.js";
+import { Vec2d } from "../../geometry/Vec2d.js";
+import { Texture } from "../../shaders/Texture.js";
+import { TransformationMatrix } from "../../geometry/TransformationMatrix.js";
+import { State } from "../../State.js";
+export class SpriteComponent extends RenderableComponent {
     private position: Vec2d;
     private size: Vec2d;
     private texture: Texture; // Your texture type
@@ -13,7 +13,6 @@ export class Sprite extends RenderObject {
     private EBO: WebGLBuffer;
 
     constructor(
-        gl: WebGL2RenderingContext,
         program: Program,
         texture: Texture,
         position: Vec2d = new Vec2d(0, 0),
@@ -36,6 +35,9 @@ export class Sprite extends RenderObject {
             0, 1, 2,  // First triangle
             1, 3, 2   // Second triangle
         ]);
+
+        const gl = State.currentGraphicsContext!;
+
         this.VAO = gl.createVertexArray();
         gl.bindVertexArray(this.VAO);
 
@@ -58,7 +60,9 @@ export class Sprite extends RenderObject {
         // gl.bindVertexArray(null);
     }
 
-    public render(gl: WebGL2RenderingContext, viewTransform: TransformationMatrix): void {
+    public render(viewTransform: TransformationMatrix): void {
+
+        const gl = State.currentGraphicsContext!;
 
         // Set uniforms
         const transformLocation = this.program.getUniformLocation("transform");
@@ -88,7 +92,8 @@ export class Sprite extends RenderObject {
         return this.size;
     }
 
-    public destroy(gl: WebGL2RenderingContext): void {
+    public destroy(): void {
+        const gl = State.currentGraphicsContext!;
         if (this.VAO) gl.deleteVertexArray(this.VAO);
         if (this.VBO) gl.deleteBuffer(this.VBO);
         if (this.EBO) gl.deleteBuffer(this.EBO);

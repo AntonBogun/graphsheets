@@ -2,8 +2,9 @@ import { Vec2d } from "../geometry/Vec2d.js";
 import { Vec3d } from "../geometry/Vec3d.js";
 import { Vec4d } from "../geometry/Vec4d.js";
 import { TransformationMatrix } from "../geometry/TransformationMatrix.js";
+import { State } from "../State.js";
 export class Camera {
-    private z_value;
+    private zoom_value;
     private last_position: Vec2d;
     private position: Vec2d;
     private initial_position: Vec2d;
@@ -14,7 +15,7 @@ export class Camera {
     private transformationMatrix: TransformationMatrix;
 
     constructor() {
-        this.z_value = 1.0;
+        this.zoom_value = 1.0;
         this.last_position = new Vec2d(0,0);
         this.position = new Vec2d(0, 0);
         this.initial_position = new Vec2d(0, 0);
@@ -24,26 +25,27 @@ export class Camera {
         this.touch_last_position = new Vec2d(0, 0);
         this.transformationMatrix = this.getTransformationMatrix();
         this.bindEventListeners();
+        State.currentCamera = this;
     }
     
     public getTransformationMatrix(): TransformationMatrix {
-        let eye = new Vec3d(this.position.x, this.position.y, this.z_value);
+        let eye = new Vec3d(this.position.x, this.position.y, this.zoom_value);
         let target = new Vec3d(this.position.x, this.position.y, -1);
         let up = new Vec3d(0, 1, 0);
         let vMatrix = TransformationMatrix.lookAt(eye, target, up);
         // let pMatrix = TransformationMatrix.perspective(1.5*Math.PI, window.innerWidth/window.innerHeight, 0, 1e6);
-        let pMatrix = TransformationMatrix.orthogonal(10*this.z_value, 10*this.z_value, 0, 1e6);
+        let pMatrix = TransformationMatrix.orthogonal(10*this.zoom_value*window.innerWidth/window.innerHeight, 10*this.zoom_value, 0, 1e6);
         this.transformationMatrix = pMatrix.mul(vMatrix);
         return this.transformationMatrix;
     }
 
     public getInverseTransformationMatrix(): TransformationMatrix {
-        let eye = new Vec3d(this.position.x, this.position.y, this.z_value);
+        let eye = new Vec3d(this.position.x, this.position.y, this.zoom_value);
         let target = new Vec3d(this.position.x, this.position.y, -1);
         let up = new Vec3d(0, 1, 0);
         let vMatrix = TransformationMatrix.inverseLookAt(eye, target, up);
         // let pMatrix = TransformationMatrix.inversePerspective(1.5*Math.PI, window.innerWidth/window.innerHeight, 0, 1e6);
-        let pMatrix = TransformationMatrix.inverseOrthogonal(10*this.z_value, 10*this.z_value, 0, 1e6);
+        let pMatrix = TransformationMatrix.inverseOrthogonal(10*this.zoom_value*window.innerWidth/window.innerHeight, 10*this.zoom_value, 0, 1e6);
         return vMatrix.mul(pMatrix);
     }
 
@@ -64,7 +66,7 @@ export class Camera {
             this.position = Vec2d.add(this.last_position, 
                 Vec2d.smul(
                     Vec2d.sub(e_pos, this.initial_position),
-                    this.z_value*2 / window.innerHeight
+                    this.zoom_value*2 / window.innerHeight
                 )
             );
         }
@@ -74,7 +76,7 @@ export class Camera {
             this.position = Vec2d.add(this.last_position, 
                 Vec2d.smul(
                     Vec2d.sub(e_pos, this.initial_position),
-                    this.z_value*2 / window.innerHeight
+                    this.zoom_value*2 / window.innerHeight
                 )
             );
             this.is_dragging = false;
@@ -82,9 +84,9 @@ export class Camera {
 
         document.onkeydown = (event) => {
             if(event.key == "+") {
-                this.z_value /= 2;
+                this.zoom_value /= 2;
             } else if(event.key == "-") {
-                this.z_value *= 2;
+                this.zoom_value *= 2;
             }
         }
 
@@ -117,7 +119,7 @@ export class Camera {
             let touch1 = new Vec2d(event.touches[1].clientX, event.touches[1].clientY);
             let touch_current_distance = Vec2d.mag(Vec2d.sub(touch0, touch1));
             let touch_current_position = Vec2d.smul(Vec2d.add(touch0, touch1), 0.5);
-            this.z_value = touch_current_distance/this.touch_initial_distance;
+            this.zoom_value = touch_current_distance/this.touch_initial_distance;
             this.position = Vec2d.add(this.touch_last_position, 
                                     Vec2d.sub(touch_current_position, this.touch_initial_position)
                                 );
@@ -157,13 +159,13 @@ export class Camera {
                 let world_mouse_position3 = new Vec3d(world_mouse_position.x, world_mouse_position.y, 0);
                 // console.log(world_mouse_position3);
                 let delta = Vec2d.dot(new Vec2d(event.deltaX, event.deltaY), new Vec2d(1,1))/(event.ctrlKey?50:100);
-                let position_to_mouse = Vec3d.normalize(Vec3d.sub(world_mouse_position3, new Vec3d(this.position.x, this.position.y, this.z_value)));
+                let position_to_mouse = Vec3d.normalize(Vec3d.sub(world_mouse_position3, new Vec3d(this.position.x, this.position.y, this.zoom_value)));
                 let xzslope = position_to_mouse.x / position_to_mouse.z;
                 let yzslope = position_to_mouse.y / position_to_mouse.z;
-                if(this.z_value * 2**delta > -1){
-                    this.position.x = this.position.x + xzslope * ((this.z_value * 2**delta) - this.z_value);
-                    this.position.y = this.position.y + yzslope * ((this.z_value * 2**delta) - this.z_value);
-                    this.z_value *= 2**(delta);
+                if(this.zoom_value * 2**delta > -1){
+                    this.position.x = this.position.x + xzslope * ((this.zoom_value * 2**delta) - this.zoom_value);
+                    this.position.y = this.position.y + yzslope * ((this.zoom_value * 2**delta) - this.zoom_value);
+                    this.zoom_value *= 2**(delta);
                 }
             }
         , { passive: false });
