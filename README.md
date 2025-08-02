@@ -1,5 +1,5 @@
 `npm install`
 
+`npm run dev`
 
-`npm run build`
-`python -m http.server`
+Open the link `http://localhost:****/` that vite shows

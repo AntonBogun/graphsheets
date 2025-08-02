@@ -1,4 +1,6 @@
 "use strict";
+
+
 interface Box {
     x: number;
     y: number;
@@ -44,6 +46,16 @@ class IO {
         });
     }
 }
+// #endregion
+
+
+
+//ANCHOR shader imports
+// #region shader imports
+import vertexShaderSource from './shaders/vert.glsl?raw';
+import fragmentShaderSource from './shaders/frag.glsl?raw';
+const vertexShaderFile = new SourceFile("vert.glsl", vertexShaderSource);
+const fragmentShaderFile = new SourceFile("frag.glsl", fragmentShaderSource);
 // #endregion
 
 
@@ -809,7 +821,7 @@ class RenderQueue {
 //ANCHOR main
 // #region main
 window.onload = () => {
-Promise.all([IO.openFile("src/vert.glsl"), IO.openFile("src/frag.glsl"), IO.openImage("mandelbrot_set.jpg")]).then(([vertexShaderSource, fragmentShaderSource, mandelbrot]) => {
+Promise.all([IO.openImage("mandelbrot_set.jpg")]).then(([mandelbrot]) => {
     
     function printMatrix(m: number[]|Float32Array): string {
         let str = '';
@@ -921,7 +933,7 @@ Promise.all([IO.openFile("src/vert.glsl"), IO.openFile("src/frag.glsl"), IO.open
         requestAnimationFrame(animationLoop);
     }
     
-    const program = programDB.getProgram(vertexShaderSource, fragmentShaderSource);
+    const program = programDB.getProgram(vertexShaderFile, fragmentShaderFile);
     program.use();
     const texture = textureDB.getTexture(mandelbrot);
     const renderQueue = new RenderQueue();
