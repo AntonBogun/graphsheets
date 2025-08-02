@@ -75,6 +75,7 @@ Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shad
     }
     let print_ = new PrintWithRateLimit(250);
     let fpsLog = new FPSLog();
+    console.log("window.onload");
 
     const canvas = document.getElementById('glCanvas') as HTMLCanvasElement;
     const gl = canvas.getContext('webgl2')!;
@@ -89,7 +90,7 @@ Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shad
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
 
     window.onresize = () => {
-        requestAnimationFrame(redraw);
+        redraw();
     };
 
     // Camera setup
@@ -104,16 +105,19 @@ Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shad
         const transformLocation = program.getUniformLocation("transform");
         gl.uniformMatrix4fv(transformLocation, false, cam.getTransformationMatrix().transpose().matrix);
 
-        print_.print(`Matrix:\n${printMatrix(cam.getTransformationMatrix().matrix)}`);
-        print_.printChained(`${cam.getTransformationMatrix().matrix[15]}`);
+        // print_.print(`Matrix:\n${printMatrix(cam.getTransformationMatrix().matrix)}`);
+        // print_.printChained(`${cam.getTransformationMatrix().matrix[15]}`);
 
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
         renderQueue.renderByProgram(gl, cam.getTransformationMatrix().transpose());
         // gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, 0);
 
-        requestAnimationFrame(redraw);
         fpsLog.update();
+    }
+    function animationLoop(): void {
+        redraw();
+        requestAnimationFrame(animationLoop);
     }
     
     const program = programDB.getProgram(vertexShaderSource, fragmentShaderSource);
@@ -126,6 +130,6 @@ Promise.all([IO.openFile("src/shaders/sources/vert.glsl"), IO.openFile("src/shad
     renderQueue.add(sprite2);
 
 
-    redraw();
+    animationLoop();
 });
 }

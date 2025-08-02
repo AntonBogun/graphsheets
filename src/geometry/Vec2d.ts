@@ -21,4 +21,10 @@ export class Vec2d {
     static dot(a: Vec2d, b: Vec2d): number {
         return a.x * b.x + a.y * b.y;
     }
+    static copy(v: Vec2d): Vec2d {
+        return new Vec2d(v.x, v.y);
+    }
+    static toString(v: Vec2d): string {
+        return `(${v.x}, ${v.y})`;
+    }
 }
