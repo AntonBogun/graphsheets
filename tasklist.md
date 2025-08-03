@@ -37,3 +37,11 @@ TODO:
 - Basic menu
 - Create a Subgraph
 - Scene changes with Subgraphs
+
+# 03-08-02025
+- Vector<T> Array implementation
+- Attempt at rendering basic monospace text
+
+TODO:
+- Figure out the textures so they don't draw upside down (or just flip the camera)
+- Figure out why the text is boxy when zoomed in and so large and how to do glyph offsets correctly

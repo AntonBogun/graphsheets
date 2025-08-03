@@ -44,3 +44,6 @@ _*
 main.js
 old/**
 compile/
+
+fonts/consolas.ttf
+fonts/Inconsolata/

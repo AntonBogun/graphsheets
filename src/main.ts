@@ -1,14 +1,4 @@
 "use strict";
-
-
-interface Box {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-}
-
-
 //ANCHOR File I/O
 // #region File I/O
 class SourceFile {
@@ -56,6 +46,11 @@ import vertexShaderSource from './shaders/vert.glsl?raw';
 import fragmentShaderSource from './shaders/frag.glsl?raw';
 const vertexShaderFile = new SourceFile("vert.glsl", vertexShaderSource);
 const fragmentShaderFile = new SourceFile("frag.glsl", fragmentShaderSource);
+
+import textVertexShaderSource from './shaders/text-vert.glsl?raw';
+import textFragmentShaderSource from './shaders/text-frag.glsl?raw';
+const textVertexShaderFile = new SourceFile("text-vert.glsl", textVertexShaderSource);
+const textFragmentShaderFile = new SourceFile("text-frag.glsl", textFragmentShaderSource);
 // #endregion
 
 
@@ -143,6 +138,402 @@ class Vec4d {
 }
 // #endregion
 
+
+
+//ANCHOR ArrayVector
+// #region ArrayVector
+
+type _VecConstructorLookup = {
+  Float32: Float32ArrayConstructor;
+  Float64: Float64ArrayConstructor;
+  Int8: Int8ArrayConstructor;
+  Int16: Int16ArrayConstructor;
+  Int32: Int32ArrayConstructor;
+  Uint8: Uint8ArrayConstructor;
+  Uint16: Uint16ArrayConstructor;
+  Uint32: Uint32ArrayConstructor;
+};
+type _VecTypeLookup = {
+  Float32: Float32Array;
+  Float64: Float64Array;
+  Int8: Int8Array;
+  Int16: Int16Array;
+  Int32: Int32Array;
+  Uint8: Uint8Array;
+  Uint16: Uint16Array;
+  Uint32: Uint32Array;
+};
+const VectorDefaults = {
+    initialCapacity: 16, // Default initial capacity
+    growthFactor: 2, // Default growth factor
+    shrinkThreshold: 0.25, // Default shrink threshold
+    shrinkMult: 2, // Default shrink threshold
+} as const;
+
+export class Vector<T extends keyof _VecConstructorLookup> {
+    private _buffer: _VecTypeLookup[T]|null;
+    private _size: number;
+    private _capacity: number;
+    private arrayConstructor: _VecConstructorLookup[T];
+    private growthFactor: number;
+    private shrinkThreshold: number;
+    private shrinkMult: number;
+    constructor(
+        arrayType: _VecConstructorLookup[T],
+        size: number,
+        growthFactor: number,
+        shrinkThreshold: number,
+        shrinkMult: number
+    ) {
+        this.arrayConstructor = arrayType;
+        this.growthFactor = growthFactor;
+        this.shrinkThreshold = shrinkThreshold;
+        this.shrinkMult = shrinkMult;
+        if (growthFactor <= 1 || shrinkThreshold <= 0 || shrinkThreshold >= 1 || shrinkMult <= 1 || (1/shrinkThreshold <= shrinkMult)) {
+            throw new RangeError(`Invalid growthFactor (${growthFactor}), shrinkThreshold (${shrinkThreshold}), or shrinkMult (${shrinkMult})`);
+        }
+        if (size < 0) {
+            this._buffer = null;
+            this._capacity = 0;
+            this._size = 0;
+        }else{
+            this._capacity = Math.max(VectorDefaults.initialCapacity, Math.ceil(size* this.growthFactor));
+            this._size = size;
+            this._buffer = new arrayType(this._capacity) as _VecTypeLookup[T];
+        }
+    }
+
+    // Static factory methods for common types
+    static float32(initialCapacity?: number, growthFactor?: number, shrinkThreshold?: number): Vector<'Float32'> {
+        return new Vector(Float32Array, initialCapacity??-1, growthFactor??VectorDefaults.growthFactor, shrinkThreshold??VectorDefaults.shrinkThreshold, VectorDefaults.shrinkMult);
+    }
+    static uint32(initialCapacity?: number, growthFactor?: number, shrinkThreshold?: number): Vector<'Uint32'> {
+        return new Vector(Uint32Array, initialCapacity??-1, growthFactor??VectorDefaults.growthFactor, shrinkThreshold??VectorDefaults.shrinkThreshold, VectorDefaults.shrinkMult);
+    }
+    static uint16(initialCapacity?: number, growthFactor?: number, shrinkThreshold?: number): Vector<'Uint16'> {
+        return new Vector(Uint16Array, initialCapacity??-1, growthFactor??VectorDefaults.growthFactor, shrinkThreshold??VectorDefaults.shrinkThreshold, VectorDefaults.shrinkMult);
+    }
+    static int32(initialCapacity?: number, growthFactor?: number, shrinkThreshold?: number): Vector<'Int32'> {
+        return new Vector(Int32Array, initialCapacity??-1, growthFactor??VectorDefaults.growthFactor, shrinkThreshold??VectorDefaults.shrinkThreshold, VectorDefaults.shrinkMult);
+    }
+    static int16(initialCapacity?: number, growthFactor?: number, shrinkThreshold?: number): Vector<'Int16'> {
+        return new Vector(Int16Array, initialCapacity??-1, growthFactor??VectorDefaults.growthFactor, shrinkThreshold??VectorDefaults.shrinkThreshold, VectorDefaults.shrinkMult);
+    }
+    static int8(initialCapacity?: number, growthFactor?: number, shrinkThreshold?: number): Vector<'Int8'> {
+        return new Vector(Int8Array, initialCapacity??-1, growthFactor??VectorDefaults.growthFactor, shrinkThreshold??VectorDefaults.shrinkThreshold, VectorDefaults.shrinkMult);
+    }
+    static uint8(initialCapacity?: number, growthFactor?: number, shrinkThreshold?: number): Vector<'Uint8'> {
+        return new Vector(Uint8Array, initialCapacity??-1, growthFactor??VectorDefaults.growthFactor, shrinkThreshold??VectorDefaults.shrinkThreshold, VectorDefaults.shrinkMult);
+    }
+    /** //~Note: Slow-ish 
+     * @param copy if true, copies the array, otherwise sets .data to be the array directly
+    */
+    static fromArray<T extends keyof _VecConstructorLookup>(array: _VecTypeLookup[T], copy?: boolean, growthFactor?: number, shrinkThreshold?: number, shrinkMult?: number): Vector<T> {
+        copy = copy ?? true;
+        const a=copy ? array.length : -1;
+        const b=growthFactor ?? VectorDefaults.growthFactor;
+        const c=shrinkThreshold ?? VectorDefaults.shrinkThreshold;
+        const d=shrinkMult ?? VectorDefaults.shrinkMult;
+        let v: Vector<T>;
+        if (array instanceof Float32Array){
+            v = new Vector<"Float32">(Float32Array,a,b,c,d) as Vector<T>;
+        } else if (array instanceof Uint16Array){
+            v = new Vector<"Uint16">(Uint16Array,a,b,c,d) as Vector<T>;
+        } else if (array instanceof Uint32Array){
+            v = new Vector<"Uint32">(Uint32Array,a,b,c,d) as Vector<T>;
+        }else if (array instanceof Uint8Array){
+            v = new Vector<"Uint8">(Uint8Array,a,b,c,d) as Vector<T>;
+        }else if (array instanceof Int32Array){
+            v = new Vector<"Int32">(Int32Array,a,b,c,d) as Vector<T>;
+        }else if (array instanceof Int8Array){
+            v = new Vector<"Int8">(Int8Array,a,b,c,d) as Vector<T>;
+        }else if (array instanceof Int16Array){
+            v = new Vector<"Int16">(Int16Array,a,b,c,d) as Vector<T>;
+        }else if (array instanceof Float64Array){
+            v = new Vector<"Float64">(Float64Array,a,b,c,d) as Vector<T>;
+        } else {
+            throw new TypeError("Unsupported array type for Vector.fromArray");
+        }
+        v._size = array.length;
+        v._capacity = array.length;
+        if (copy){
+            for (let i = 0; i < v._size; i++) {
+                v._buffer![i] = array[i];
+            }
+        }else{
+            v._buffer = array;
+        }
+        return v;
+    }
+
+    // Properties
+    get size(): number {
+        return this._size;
+    }
+    sizeBytes(): number {
+        return this._size * this.arrayConstructor.BYTES_PER_ELEMENT;
+    }
+    capacityBytes(): number {
+        return this._capacity * this.arrayConstructor.BYTES_PER_ELEMENT;
+    }
+
+    get capacity(): number {
+        return this._capacity;
+    }
+
+    get empty(): boolean {
+        return this._size === 0;
+    }
+
+    /**note: may invalidate after any modification 
+     * note2: if you use this with webgl, take .view instead
+    */
+    get data(): _VecTypeLookup[T] {
+        if (this._buffer === null) {
+            throw new Error("Vector is not initialized");
+        }
+        return this._buffer;
+    }
+    /** returns an array exactly of size .size, so it is safe to use with webgl */
+    get view(): _VecTypeLookup[T] {
+        if (this._buffer === null) {
+            throw new Error("Vector is not initialized");
+        }
+        return this._buffer.subarray(0, this._size) as _VecTypeLookup[T];
+    }
+
+    // Element access
+    at(index: number): number {
+        if (index < 0 || index >= this._size) {
+            throw new RangeError(`Index ${index} out of bounds [0, ${this._size})`);
+        }
+        return this._buffer![index];
+    }
+
+    set(index: number, value: number): void {
+        if (index < 0 || index >= this._size) {
+            throw new RangeError(`Index ${index} out of bounds [0, ${this._size})`);
+        }
+        this._buffer![index] = value;
+    }
+
+    front(): number {
+        if (this._size === 0) {
+            throw new Error("Vector is empty");
+        }
+        return this._buffer![0];
+    }
+
+    back(): number {
+        if (this._size === 0) {
+            throw new Error("Vector is empty");
+        }
+        return this._buffer![this._size - 1];
+    }
+
+    // Capacity management
+    reserve(newCapacity: number): void {
+        if (newCapacity > this._capacity) {
+            this.reallocate(newCapacity, true);
+        }
+    }
+
+    shrinkToFit(): void {
+        if (this._size < this._capacity) {
+            this.reallocate(this._size, true);
+        }
+    }
+    /** //!note: does not change size, size must be less than newCapacity
+    Note2: copies the entirety of old buffer capacity even if old size was less
+    * @param copy if true, copies existing data to new buffer, otherwise just allocates new buffer
+     */
+    private reallocate(newCapacity: number, copy: boolean): void {
+        if( newCapacity <= 0  || this._size > newCapacity) {
+            throw new RangeError(`New capacity must be > 0 and size (${this._size}) <= newCapacity`);
+        }
+        const oldBuffer = this._buffer;
+        this._buffer = new this.arrayConstructor(newCapacity) as _VecTypeLookup[T];
+        // Copy existing data
+        if (oldBuffer !== null && copy) {
+            const toCopy = Math.min(this._size, this._capacity);
+            for (let i = 0; i < toCopy; i++) {
+                this._buffer[i] = oldBuffer[i];
+            }
+        }
+        this._capacity = newCapacity;
+    }
+    /** if minCapacity > current capacity, reallocates to min(minCapacity, new capacity*1.5)
+     * @param copy if true, copies existing data to new buffer, otherwise is agnostic to existing data
+     */
+    private ensureCapacity(minCapacity: number, copy: boolean): void {
+        if (minCapacity > this._capacity) {
+            const newCapacity = Math.max(
+                minCapacity,
+                Math.ceil(this._capacity * this.growthFactor)
+            );
+            this.reallocate(newCapacity, copy);
+        }
+    }
+    /** if size <= capacity * shrinkThreshold, shrinks to max(size * shrinkMult, VectorDefaults.initialCapacity) */
+    private checkShrink(): void {
+        if (this._capacity > 32 && this._size <= this._capacity * this.shrinkThreshold) {
+            const newCapacity = Math.max(
+                Math.ceil(this._size * this.shrinkMult),
+                VectorDefaults.initialCapacity
+            );
+            if (newCapacity < this._capacity) {
+                this.reallocate(newCapacity, true);
+            }
+        }
+    }
+
+    // Modifiers
+    
+    /** //!note: slower than .allocate(), modify .data, then resizeNoFill() */
+    pushBack(value: number): void {
+        this.ensureCapacity(this._size + 1, true);
+        this._buffer![this._size] = value;
+        this._size++;
+    }
+    /** //!note: slower than access .data, then resizeNoFill() */
+    popBack(): number {
+        if (this._size === 0) {
+            throw new Error("Cannot pop from empty vector");
+        }
+        const value = this._buffer![this._size - 1];
+        this._size--;
+        this.checkShrink();
+        return value;
+    }
+    /** //!note: slow, do it if you have a reason */
+    insert(index: number, value: number): void {
+        if (index < 0 || index > this._size) {
+            throw new RangeError(`Insert index ${index} out of bounds [0, ${this._size}]`);
+        }
+        
+        this.ensureCapacity(this._size + 1, true);
+        
+        // Shift elements to the right
+        for (let i = this._size; i > index; i--) {
+            this._buffer![i] = this._buffer![i - 1];
+        }
+        
+        this._buffer![index] = value;
+        this._size++;
+    }
+    /** //!note: slow, do it if you have a reason */
+    erase(index: number): number {
+        if (index < 0 || index >= this._size) {
+            throw new RangeError(`Erase index ${index} out of bounds [0, ${this._size})`);
+        }
+        
+        const value = this._buffer![index];
+        
+        // Shift elements to the left
+        for (let i = index; i < this._size - 1; i++) {
+            this._buffer![i] = this._buffer![i + 1];
+        }
+        
+        this._size--;
+        this.checkShrink();
+        return value;
+    }
+
+    /** force clears the array */
+    clear(): void {
+        this._size = 0;
+        this._capacity = 0;
+        this._buffer = null;
+    }
+    /** consider using resizeNoFill if you don't care about filling new space with fillValue
+     * @returns true if the capacity changed, false if it did not
+    */
+    resize(newSize: number, fillValue: number = 0): boolean {
+        const currentCapacity = this._capacity;
+        if (newSize < 0) {
+            throw new RangeError("Size cannot be negative");
+        }
+
+        if (newSize > this._size) {
+            this.ensureCapacity(newSize, true);
+            // Fill new elements with fillValue
+            for (let i = this._size; i < newSize; i++) {
+                this._buffer![i] = fillValue;
+            }
+        }
+        this._size = newSize;
+        this.checkShrink();
+        return this._capacity !== currentCapacity;
+    }
+    /** resizes but does not fill the newly added values (so they could be same as previous resize)
+     * @returns true if the capacity changed, false if it did not
+    */
+    resizeNoFill(newSize: number): boolean {
+        const currentCapacity = this._capacity;
+        if (newSize < 0) {
+            throw new RangeError("Size cannot be negative");
+        }
+
+        if (newSize > this._size) {
+            this.ensureCapacity(newSize, true);
+        }
+        this._size = newSize;
+        this.checkShrink();
+        return this._capacity !== currentCapacity;
+    }
+
+    // Bulk operations
+    assign(values: ArrayLike<number>): void {
+        this.ensureCapacity(values.length, false);
+        for (let i = 0; i < values.length; i++) {
+            this._buffer![i] = values[i];
+        }
+        this._size = values.length;
+    }
+
+    extend(values: ArrayLike<number>): void {
+        this.ensureCapacity(this._size + values.length, true);
+        for (let i = 0; i < values.length; i++) {
+            this._buffer![this._size + i] = values[i];
+        }
+        this._size += values.length;
+    }
+
+    // Array conversion
+    toArray(): number[] {
+        const result: number[] = [];
+        for (let i = 0; i < this._size; i++) {
+            result.push(this._buffer![i]);
+        }
+        return result;
+    }
+
+
+    // Iterator support
+    *[Symbol.iterator](): IterableIterator<number> {
+        for (let i = 0; i < this._size; i++) {
+            yield this._buffer![i];
+        }
+    }
+
+
+    // Debug/info methods
+    toString(): string {
+        return `Vector<${this.arrayConstructor.name}>[${this.toArray().join(', ')}]`;
+    }
+
+    getInfo(): { size: number; capacity: number; type: string; growthFactor: number; shrinkThreshold: number } {
+        return {
+            size: this._size,
+            capacity: this._capacity,
+            type: this.arrayConstructor.name,
+            growthFactor: this.growthFactor,
+            shrinkThreshold: this.shrinkThreshold
+        };
+    }
+}
+
+// #endregion
 
 
 //ANCHOR TransformationMatrix
@@ -583,9 +974,9 @@ abstract class RenderObject {
     constructor(program: Program) {
         this.program = program;
     }
-    
+    /** assumes this.program is already in use */
     abstract render(gl: WebGL2RenderingContext,viewTransform:TransformationMatrix): void;
-    
+    /** uses the program and calls this.render() */
     draw(gl: WebGL2RenderingContext,viewTransform:TransformationMatrix): void {
         this.program.use();
         this.render(gl,viewTransform);
@@ -620,10 +1011,10 @@ class Sprite extends RenderObject {
         
         const vertices = new Float32Array([
             // Position (x, y), UV (u, v)
-            -0.5 * size.x + position.x, -0.5 * size.y + position.y, 0.0, 0.0,  // Bottom-left
-            -0.5 * size.x + position.x,  0.5 * size.y + position.y, 0.0, 1.0,  // Top-left
-             0.5 * size.x + position.x, -0.5 * size.y + position.y, 1.0, 0.0,  // Bottom-right
-             0.5 * size.x + position.x,  0.5 * size.y + position.y, 1.0, 1.0   // Top-right
+            -0.5 * size.x + position.x, -0.5 * size.y + position.y, 0.0, 1.0,  // Bottom-left
+            -0.5 * size.x + position.x,  0.5 * size.y + position.y, 0.0, 0.0,  // Top-left
+             0.5 * size.x + position.x, -0.5 * size.y + position.y, 1.0, 1.0,  // Bottom-right
+             0.5 * size.x + position.x,  0.5 * size.y + position.y, 1.0, 0.0   // Top-right
         ]);
 
         const indices = new Uint32Array([
@@ -690,6 +1081,185 @@ class Sprite extends RenderObject {
 }
 // #endregion
 
+
+
+//ANCHOR TextRenderer
+// #region TextRenderer
+
+// Font structures
+interface FontGlyph {
+    id: number;//character code
+    x: number;//texture x position
+    y: number;
+    width: number;//texture width
+    height: number;
+    xoffset: number;//x offset from the cursor position
+    yoffset: number;
+    xadvance: number;// how much to advance the cursor after rendering this glyph
+}
+
+interface FontInfo {
+    size: number;//font size
+    lineHeight: number;//height of a line of text
+    base: number;// baseline offset
+    scaleW: number;// texture width
+    scaleH: number;// texture height
+    glyphs: Map<number, FontGlyph>;// id -> FontGlyph
+}
+
+class TextRenderer extends RenderObject {
+    private VAO: WebGLVertexArrayObject;
+    private VBO: WebGLBuffer;
+    private EBO: WebGLBuffer;
+    private texture: Texture;
+    private fontInfo: FontInfo;
+    private initChars = 50;
+
+    // Vertex data: [x, y, u, v]
+    private vertexVector:Vector<'Float32'>;
+    private indexVector:Vector<'Uint16'>;
+    private lineCount = 0;
+    private charCount = 0;
+
+    constructor(gl: WebGL2RenderingContext, program: Program, texture: Texture, fontInfo: FontInfo) {
+        super(program);
+        this.texture = texture;
+        this.fontInfo = fontInfo;
+        this.vertexVector = Vector.float32();
+        this.indexVector = Vector.uint16();
+
+        this.VAO = gl.createVertexArray();
+        this.VBO = gl.createBuffer();
+        this.EBO = gl.createBuffer();
+
+        gl.bindVertexArray(this.VAO);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
+
+        // a_position (vec2)
+        gl.enableVertexAttribArray(0);
+        gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 4 * 4, 0);
+        // a_texCoord (vec2)
+        gl.enableVertexAttribArray(1);
+        gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 4 * 4, 2 * 4);
+
+        gl.bindVertexArray(null);
+    }
+
+    public setText(gl: WebGL2RenderingContext, text: string, x: number, y: number, scale: number = 1.0): void {
+        this.lineCount = 0;
+        this.charCount = 0;
+        let cursorX = x;
+        let cursorY = y;
+        // 4 vertices per char, 4 floats per vertex (x, y, u, v)
+        let vertCapChanged = this.vertexVector.resizeNoFill(Math.max(this.initChars,text.length) * 4 * 4);
+        // 6 indices per quad (char) (2 triangles)
+        let indexCapChanged = this.indexVector.resizeNoFill(Math.max(this.initChars,text.length) * 6)
+        const vertexData = this.vertexVector.view;
+        const indexData = this.indexVector.view;
+        for (let i = 0; i < text.length; i++) {
+            const charCode = text.charCodeAt(i);
+            if (charCode === 10) { // Newline character
+                cursorX = x; // Reset X position
+                cursorY -= this.fontInfo.lineHeight * scale; // Move down one line
+                this.lineCount++;
+                continue;
+            }
+            //skip \r
+            if (charCode === 13) continue; // Carriage return, skip it
+            let glyph = this.fontInfo.glyphs.get(charCode);
+            
+            // if (!glyph) continue;
+            if (!glyph){
+                glyph = this.fontInfo.glyphs.get(63)!; // ASCII '?'
+            }
+            console.log(glyph);
+            const x1 = cursorX + glyph.xoffset * scale;
+            // const y1 = cursorY + (-this.fontInfo.lineHeight+ glyph.yoffset) * scale;
+            const y1 = cursorY;
+            const x2 = x1 + glyph.width * scale;
+            const y2 = y1 + glyph.height * scale;
+
+            const u1 = glyph.x / this.fontInfo.scaleW;
+            const v1 = glyph.y / this.fontInfo.scaleH;
+            const u2 = (glyph.x + glyph.width) / this.fontInfo.scaleW;
+            const v2 = (glyph.y + glyph.height) / this.fontInfo.scaleH;
+
+            // Push quad vertices: x, y, u, v
+            const vertexOffset = this.charCount * 16; // 4 vertices * 4 floats per vertex
+            vertexData.set([
+                x1, y1, u1, v2,
+                x2, y1, u2, v2,
+                x2, y2, u2, v1,
+                x1, y2, u1, v1,
+            ], vertexOffset);
+
+            // Indices (two triangles)
+            const indexOffset = this.charCount * 6; // 6 indices per char
+            const base = this.charCount * 4; // 4 vertices per char
+            indexData[indexOffset + 0] = base + 0;
+            indexData[indexOffset + 1] = base + 1;
+            indexData[indexOffset + 2] = base + 2;
+            indexData[indexOffset + 3] = base + 0;
+            indexData[indexOffset + 4] = base + 2;
+            indexData[indexOffset + 5] = base + 3;
+
+            this.charCount++;
+            cursorX += glyph.xadvance * scale;
+        }
+        //update to the correct size
+        vertCapChanged ||=this.vertexVector.resizeNoFill(this.charCount * 4 * 4)// 4 vertices per char, 4 floats per vertex
+        indexCapChanged ||= this.indexVector.resizeNoFill(this.charCount * 6); // 6 indices per char (2 triangles)
+
+        //if the capacity changed, we need to reallocate the GPU buffer to match
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        if(vertCapChanged){
+            gl.bufferData(gl.ARRAY_BUFFER, this.vertexVector.capacityBytes(), gl.DYNAMIC_DRAW);
+        }
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.vertexVector.view);
+        // console.log(this.vertexVector.view);
+        
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
+        if(indexCapChanged){
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indexVector.capacityBytes(), gl.DYNAMIC_DRAW);
+        }
+
+        gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, this.indexVector.view);
+    }
+
+    public render(gl: WebGL2RenderingContext, viewTransform: TransformationMatrix): void {
+        if (this.charCount === 0) return; // Nothing to render
+
+        // Set uniforms
+        const transformLoc = this.program.getUniformLocation("transform");
+        const colorLoc = this.program.getUniformLocation("u_color");
+        const texLoc = this.program.getUniformLocation("u_texture");
+        const distRangeLoc = this.program.getUniformLocation("u_distanceRange");
+        const fontWeightLoc = this.program.getUniformLocation("u_fontWeight");
+        const smoothingLoc = this.program.getUniformLocation("u_smoothing");
+        // console.log(`Rendering ${this.charCount} characters over ${this.lineCount} lines.`);
+        gl.uniformMatrix4fv(transformLoc, false, viewTransform.matrix);
+        gl.uniform3f(colorLoc, 0.0, 0.0, 0.0); // black
+        gl.uniform1i(texLoc, 0);
+        gl.uniform1f(distRangeLoc, 8.0); // must match -d in msdf-bmfont
+        gl.uniform1f(fontWeightLoc, 1.0);  // fine-tune weight
+        gl.uniform1f(smoothingLoc, 1.0);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.texture.texture);
+
+        gl.bindVertexArray(this.VAO);
+        gl.drawElements(gl.TRIANGLES, this.indexVector.size, gl.UNSIGNED_SHORT, 0);
+        gl.bindVertexArray(null);
+    }
+
+    public destroy(gl: WebGL2RenderingContext): void {
+        gl.deleteVertexArray(this.VAO);
+        gl.deleteBuffer(this.VBO);
+        gl.deleteBuffer(this.EBO);
+    }
+}
+// #endregion
 
 
 //ANCHOR RenderQueue
@@ -818,77 +1388,119 @@ class RenderQueue {
 // #endregion
 
 
+
+//ANCHOR misc funcs
+// #region misc funcs
+function printMatrix(m: number[]|Float32Array): string {
+    let str = '';
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            str += m[i * 4 + j].toFixed(3) + ' ';
+        }
+        if (i < 3) {
+            str += '\n';
+        }
+    }
+    return str;
+}
+
+class PrintWithRateLimit {
+    private rate: number;
+    private lastTime: number;
+    private chained: boolean;
+
+    constructor(rate: number) {
+        this.rate = rate;
+        this.lastTime = 0;
+        this.chained = false;
+    }
+
+    print(...message: any[]): void {
+        const now = Date.now();
+        if (now - this.lastTime >= this.rate) {
+            console.log(...message);
+            this.lastTime = now;
+            this.chained = true;
+        } else {
+            this.chained = false;
+        }
+    }
+
+    printChained(...message: any[]): void {
+        if (this.chained) {
+            console.log(...message);
+        }
+    }
+}
+class FPSLog{
+    private lastTime: number;
+    private frameCount: number;
+    private fps: number;
+
+    constructor() {
+        this.lastTime = Date.now();
+        this.frameCount = 0;
+        this.fps = 0;
+    }
+
+    update(): void {
+        this.frameCount++;
+        const now = Date.now();
+        if (now - this.lastTime >= 1000) {
+            this.fps = this.frameCount;
+            this.frameCount = 0;
+            this.lastTime = now;
+            console.log(`FPS: ${this.fps}`);
+        }
+    }
+}
+// #endregion
+
+
+
 //ANCHOR main
 // #region main
 window.onload = () => {
-Promise.all([IO.openImage("mandelbrot_set.jpg")]).then(([mandelbrot]) => {
-    
-    function printMatrix(m: number[]|Float32Array): string {
-        let str = '';
-        for (let i = 0; i < 4; i++) {
-            for (let j = 0; j < 4; j++) {
-                str += m[i * 4 + j].toFixed(3) + ' ';
-            }
-            if (i < 3) {
-                str += '\n';
-            }
-        }
-        return str;
-    }
-    
-    class PrintWithRateLimit {
-        private rate: number;
-        private lastTime: number;
-        private chained: boolean;
-    
-        constructor(rate: number) {
-            this.rate = rate;
-            this.lastTime = 0;
-            this.chained = false;
-        }
-    
-        print(message: string): void {
-            const now = Date.now();
-            if (now - this.lastTime >= this.rate) {
-                console.log(message);
-                this.lastTime = now;
-                this.chained = true;
-            } else {
-                this.chained = false;
-            }
-        }
-    
-        printChained(message: string): void {
-            if (this.chained) {
-                console.log(message);
-            }
-        }
-    }
-    class FPSLog{
-        private lastTime: number;
-        private frameCount: number;
-        private fps: number;
+Promise.all([
+    IO.openImage("mandelbrot_set.jpg"),
+    IO.openImage("fonts/Inconsolata-Regular.png"),
+    IO.openFile("fonts/Inconsolata-Regular.json")
+]).then(([
+    mandelbrot,
+    inconsolataTexture,
+    inconsolataJsonFile
+]) => {
+    console.log("window.onload");
 
-        constructor() {
-            this.lastTime = Date.now();
-            this.frameCount = 0;
-            this.fps = 0;
-        }
+    const data = JSON.parse(inconsolataJsonFile.content);
+    
+    const fontInfo: FontInfo = {
+        size: data.info.size,
+        lineHeight: data.common.lineHeight,
+        base: data.common.base,
+        scaleW: data.common.scaleW,
+        scaleH: data.common.scaleH,
+        glyphs: new Map()
+    };
 
-        update(): void {
-            this.frameCount++;
-            const now = Date.now();
-            if (now - this.lastTime >= 1000) {
-                this.fps = this.frameCount;
-                this.frameCount = 0;
-                this.lastTime = now;
-                console.log(`FPS: ${this.fps}`);
-            }
-        }
-    }
+    data.chars.forEach((char: any) => {
+        fontInfo.glyphs.set(char.id, {
+            id: char.id,
+            x: char.x,
+            y: char.y,
+            width: char.width,
+            height: char.height,
+            xoffset: char.xoffset,
+            yoffset: char.yoffset,
+            xadvance: char.xadvance
+        });
+    });
+    console.log("font",fontInfo);
+
+
     let print_ = new PrintWithRateLimit(250);
     let fpsLog = new FPSLog();
-    console.log("window.onload");
+
 
     const canvas = document.getElementById('glCanvas') as HTMLCanvasElement;
     const gl = canvas.getContext('webgl2')!;
@@ -902,9 +1514,6 @@ Promise.all([IO.openImage("mandelbrot_set.jpg")]).then(([mandelbrot]) => {
     canvas.height = window.innerHeight;
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
 
-    window.onresize = () => {
-        redraw();
-    };
 
     // Camera setup
     const cam = new Camera();
@@ -915,11 +1524,10 @@ Promise.all([IO.openImage("mandelbrot_set.jpg")]).then(([mandelbrot]) => {
         canvas.height = window.innerHeight;
         gl.viewport(0, 0, window.innerWidth, window.innerHeight);
 
-        const transformLocation = program.getUniformLocation("transform");
-        gl.uniformMatrix4fv(transformLocation, false, cam.getTransformationMatrix().transpose().matrix);
-
         // print_.print(`Matrix:\n${printMatrix(cam.getTransformationMatrix().matrix)}`);
         // print_.printChained(`${cam.getTransformationMatrix().matrix[15]}`);
+        // print_.print(`Matrix:\n${Vector.fromArray(cam.getTransformationMatrix().matrix)}`,
+        // Vector.fromArray(cam.getTransformationMatrix().matrix).getInfo());
 
         gl.clearColor(1.0, 1.0, 1.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
@@ -935,12 +1543,19 @@ Promise.all([IO.openImage("mandelbrot_set.jpg")]).then(([mandelbrot]) => {
     
     const program = programDB.getProgram(vertexShaderFile, fragmentShaderFile);
     program.use();
+    const textProgram = programDB.getProgram(textVertexShaderFile, textFragmentShaderFile);
+    const fontTexture = textureDB.getTexture(inconsolataTexture);
+    const textRenderer = new TextRenderer(gl, textProgram, fontTexture, fontInfo);
+
+    textRenderer.setText(gl, "Hello, World!\nnewline test\n\nnon-ascii test вувршщ日本語テスト\nproof gggg yoffset is required...", 0, -2, 1/256);
+
     const texture = textureDB.getTexture(mandelbrot);
     const renderQueue = new RenderQueue();
     const sprite1 = new Sprite(gl,program, texture);
     const sprite2 = new Sprite(gl,program, texture, new Vec2d(0.5, 0.5), new Vec2d(0.5, 0.5));
     renderQueue.add(sprite1);
     renderQueue.add(sprite2);
+    renderQueue.add(textRenderer);
 
 
     animationLoop();
