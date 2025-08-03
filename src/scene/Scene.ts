@@ -16,6 +16,7 @@ export class Scene {
     }
 
     public display(): void {
+        State.currentScene = this;
         RenderManager.getRenderManager().clear();
         RenderManager.getRenderManager().add(...this.components);
     }

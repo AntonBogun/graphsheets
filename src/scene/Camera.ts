@@ -3,6 +3,7 @@ import { Vec3d } from "../geometry/Vec3d.js";
 import { Vec4d } from "../geometry/Vec4d.js";
 import { TransformationMatrix } from "../geometry/TransformationMatrix.js";
 import { State } from "../State.js";
+import { ComponentHelper } from "./components/ComponentHelper.js";
 export class Camera {
     private zoom_value;
     private last_position: Vec2d;
@@ -46,7 +47,7 @@ export class Camera {
         let vMatrix = TransformationMatrix.lookAt(eye, target, up);
         // let pMatrix = TransformationMatrix.perspective(1.5*Math.PI, window.innerWidth/window.innerHeight, 0, 1e6);
         let pMatrix = TransformationMatrix.orthogonal(10*this.zoom_value*window.innerWidth/window.innerHeight, 10*this.zoom_value, 0, 1e6);
-        // this.transformationMatrix = pMatrix.mul(vMatrix);
+        this.transformationMatrix = pMatrix.mul(vMatrix);
         // this.inverseTransformationMatrix = this.getInverseTransformationMatrix();
         // this.isViewDirty = false;
         return this.transformationMatrix;
@@ -75,7 +76,20 @@ export class Camera {
             this.last_position = this.position;
         }
 
+        // TODO: Use pointer events instead
         document.onmousemove = (event) => {
+            const scene = State.currentScene;
+            if(scene) {
+                for(const component of scene?.getComponents()) {
+                    if(ComponentHelper.isSelectable(component)){
+                        if(component.containsPosition((event.pageX-window.innerWidth/2)/window.innerWidth, -(event.pageY-window.innerHeight/2)/window.innerHeight)) {
+                            component.isSelected = true;
+                        } else {
+                            component.isSelected = false;
+                        }
+                    }
+                }  
+            }
             if(!this.is_dragging) return;
             const e_pos = new Vec2d(event.pageX, -event.pageY);
             this.position = Vec2d.add(this.last_position, 

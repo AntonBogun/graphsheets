@@ -1,5 +1,4 @@
 import { ShaderDB } from "../shaders/ShaderDB.js";
-import { SourceFile } from "../files/SourceFile.js";
 import { Shader, shaderType } from "../shaders/shader.js";
 import { State } from "../State.js";
 export class Program {

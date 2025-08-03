@@ -15,80 +15,10 @@ if (!gl) throw new Error('WebGL not supported');
 State.currentGraphicsContext = gl;
 
 Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg")]).then(([_, mandelbrot]) => {
-    
-    function printMatrix(m: number[]|Float32Array): string {
-        let str = '';
-        for (let i = 0; i < 4; i++) {
-            for (let j = 0; j < 4; j++) {
-                str += m[i * 4 + j].toFixed(3) + ' ';
-            }
-            if (i < 3) {
-                str += '\n';
-            }
-        }
-        return str;
-    }
-    
-    class PrintWithRateLimit {
-        private rate: number;
-        private lastTime: number;
-        private chained: boolean;
-    
-        constructor(rate: number) {
-            this.rate = rate;
-            this.lastTime = 0;
-            this.chained = false;
-        }
-    
-        print(message: string): void {
-            const now = Date.now();
-            if (now - this.lastTime >= this.rate) {
-                console.log(message);
-                this.lastTime = now;
-                this.chained = true;
-            } else {
-                this.chained = false;
-            }
-        }
-    
-        printChained(message: string): void {
-            if (this.chained) {
-                console.log(message);
-            }
-        }
-    }
-    class FPSLog{
-        private lastTime: number;
-        private frameCount: number;
-        private fps: number;
 
-        constructor() {
-            this.lastTime = Date.now();
-            this.frameCount = 0;
-            this.fps = 0;
-        }
-
-        update(): void {
-            this.frameCount++;
-            const now = Date.now();
-            if (now - this.lastTime >= 1000) {
-                this.fps = this.frameCount;
-                this.frameCount = 0;
-                this.lastTime = now;
-                console.log(`FPS: ${this.fps}`);
-            }
-        }
-    }
-    let print_ = new PrintWithRateLimit(250);
-    let fpsLog = new FPSLog();
-    
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
-
-    window.onresize = () => {
-        requestAnimationFrame(redraw);
-    };
 
     // Camera setup
     const cam = new Camera();
@@ -108,7 +38,6 @@ Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg")])
         // gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, 0);
 
         requestAnimationFrame(redraw);
-        fpsLog.update();
     }
     
     const texture = TextureDB.getTextureDB().getTexture(mandelbrot);

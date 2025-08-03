@@ -5,14 +5,20 @@ import { Texture } from "../../shaders/Texture.js";
 import { TransformationMatrix } from "../../geometry/TransformationMatrix.js";
 import { State } from "../../State.js";
 import { ProgramDB } from "../../shaders/ProgramDB.js";
-export class SpriteComponent implements IRenderable<"basic"> {
-    public renderingType: "basic" = "basic";
+import { Box } from "../../geometry/Box.js";
+import { ISelectable } from "./ISelectable.js";
+import { Vec4d } from "../../geometry/Vec4d.js";
+import { Vec3d } from "../../geometry/Vec3d.js";
+export class SpriteComponent implements IRenderable<"basic_selectable">, ISelectable {
+    public renderingType: "basic_selectable" = "basic_selectable";
     private position: Vec2d;
     private size: Vec2d;
     private texture: Texture; // Your texture type
     private VAO: WebGLVertexArrayObject;
     private VBO: WebGLBuffer;
     private EBO: WebGLBuffer;
+    public boundingBox: Box;
+    public isSelected: boolean = false;
 
     constructor(
         texture: Texture,
@@ -30,6 +36,13 @@ export class SpriteComponent implements IRenderable<"basic"> {
              0.5 * size.x + position.x, -0.5 * size.y + position.y, 1.0, 0.0,  // Bottom-right
              0.5 * size.x + position.x,  0.5 * size.y + position.y, 1.0, 1.0   // Top-right
         ]);
+
+        this.boundingBox = new Box(
+            position.x - 0.5 * size.x,
+            position.y - 0.5 * size.y,
+            size.x,
+            size.y
+        );
 
         const indices = new Uint32Array([
             0, 1, 2,  // First triangle
@@ -68,6 +81,13 @@ export class SpriteComponent implements IRenderable<"basic"> {
 
         gl.uniformMatrix4fv(transformLocation, false, viewTransform.matrix);
 
+        const selectionLocation = ProgramDB.getProgram(this).getUniformLocation("isSelected");
+        if(this.isSelected) {
+            gl.uniform1f(selectionLocation, 1);
+        } else {
+            gl.uniform1f(selectionLocation, 0);
+        }
+
         // Bind texture
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.texture.texture);
@@ -79,6 +99,18 @@ export class SpriteComponent implements IRenderable<"basic"> {
         gl.bindVertexArray(this.VAO);
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, 0);
         // gl.bindVertexArray(null);
+    }
+
+    // TODO: Factor of two?
+    public containsPosition(x: number, y: number): boolean {
+        const transform = State.currentCamera?.getInverseTransformationMatrix()!;
+        let world_position = Vec4d.mmul(
+                            transform,
+                            new Vec4d(2*x, 2*y, 0, 1)
+                        );
+        world_position = Vec4d.smul(world_position,(1.0/world_position.w));
+        let world_position3 = new Vec3d(world_position.x, world_position.y, 0);
+        return this.boundingBox.contains(world_position3.x, world_position3.y);
     }
 
 
