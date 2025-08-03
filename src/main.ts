@@ -8,21 +8,24 @@ import { Vec2d } from "./geometry/Vec2d.js";
 import { State } from "./State.js";
 import { Scene } from "./scene/Scene.js";
 import { ProgramManager } from "./shaders/ProgramManager.js";
+import { UISprite } from "./scene/UI/UISprite.js";
+import { InteractionManager } from "./scene/interaction/InteractionManager.js";
+import { MouseSelectionHandler } from "./scene/interaction/MouseSelectionHandler.js";
+import { Texture } from "./shaders/Texture.js";
+import { UIRadioGroup } from "./scene/UI/UIRadioGroup.js";
+import { UIRadioButton } from "./scene/UI/UIRadioButton.js";
+import { MouseClickHandler } from "./scene/interaction/MouseClickHandler.js";
 window.onload = () => {
 const canvas = document.getElementById('glCanvas') as HTMLCanvasElement;
 const gl = canvas.getContext('webgl2')!;
 if (!gl) throw new Error('WebGL not supported');
 State.currentGraphicsContext = gl;
 
-Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg")]).then(([_, mandelbrot]) => {
+Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg"), IO.openImage("julia.png")]).then(([_, mandelbrot, julia]) => {
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
-
-    // Camera setup
-    const cam = new Camera();
-    State.currentCamera = cam;
 
     function redraw(): void {
         // console.log(cam.getTransformationMatrix().mul(cam.getInverseTransformationMatrix()));
@@ -39,13 +42,26 @@ Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg")])
 
         requestAnimationFrame(redraw);
     }
+
+    const cam = new Camera();
+    InteractionManager.getInstance().addMouseHandler(new MouseSelectionHandler());
+    InteractionManager.getInstance().addMouseHandler(new MouseClickHandler());
     
-    const texture = TextureDB.getTextureDB().getTexture(mandelbrot);
     const scene = new Scene([]);
-    const sprite1 = new SpriteComponent(texture);
-    const sprite2 = new SpriteComponent(texture, new Vec2d(0.5, 0.5), new Vec2d(0.5, 0.5));
+    const mand = TextureDB.getTextureDB().getTexture(mandelbrot);
+    const jul = TextureDB.getTextureDB().getTexture(julia);
+    const sprite1 = new SpriteComponent(mand);
+    const sprite2 = new SpriteComponent(mand, new Vec2d(0.5, 0.5), new Vec2d(0.5, 0.5));
+    const radioCollection = new UIRadioGroup();
+    const radio1 = new UIRadioButton(mand, jul, radioCollection, new Vec2d(-1,-1), new Vec2d(0.5,0.5));
+    const radio2 = new UIRadioButton(mand, jul, radioCollection, new Vec2d(-0.5,-1), new Vec2d(0.5,0.5));
+    const radio3 = new UIRadioButton(mand, jul, radioCollection, new Vec2d(0,-1), new Vec2d(0.5,0.5));
+
     scene.addComponent(sprite1);
     scene.addComponent(sprite2);
+    scene.addComponent(radio1);
+    scene.addComponent(radio2);
+    scene.addComponent(radio3);
     scene.display();
 
     redraw();

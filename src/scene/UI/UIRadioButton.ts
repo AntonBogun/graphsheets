@@ -1,33 +1,38 @@
 import { IRenderable } from "../../shaders/IRenderable.js";
-import { Program } from "../../shaders/Program.js";
 import { Vec2d } from "../../geometry/Vec2d.js";
 import { Texture } from "../../shaders/Texture.js";
-import { TransformationMatrix } from "../../geometry/TransformationMatrix.js";
 import { State } from "../../State.js";
-import { ProgramDB } from "../../shaders/ProgramDB.js";
 import { Box } from "../../geometry/Box.js";
+import { ProgramDB } from "../../shaders/ProgramDB.js";
 import { ISelectable } from "../interaction/ISelectable.js";
-import { Vec4d } from "../../geometry/Vec4d.js";
-import { Vec3d } from "../../geometry/Vec3d.js";
-export class SpriteComponent implements IRenderable<"basic_selectable">, ISelectable {
-    public renderingType: "basic_selectable" = "basic_selectable";
+import { IClickable } from "../interaction/IClickable.js";
+import { UIRadioGroup } from "./UIRadioGroup.js";
+export class UIRadioButton implements IRenderable<"interface">, ISelectable, IClickable {
+    public renderingType = "interface" as const;
     private position: Vec2d;
     private size: Vec2d;
-    private texture: Texture; // Your texture type
+    private textureOff: Texture;
+    private textureOn: Texture;
     private VAO: WebGLVertexArrayObject;
     private VBO: WebGLBuffer;
     private EBO: WebGLBuffer;
+    public radioGroup: UIRadioGroup;
+    public isDown: boolean;
     public boundingBox: Box;
     public isSelected: boolean = false;
 
     constructor(
-        texture: Texture,
+        textureOff: Texture,
+        textureOn: Texture,
+        radioGroup: UIRadioGroup,
         position: Vec2d = new Vec2d(0, 0),
         size: Vec2d = new Vec2d(1, 1),
     ) {
+        this.isDown = false;
         this.position = position;
         this.size = size;
-        this.texture = texture;
+        this.textureOff = textureOff;
+        this.textureOn = textureOn;
         
         const vertices = new Float32Array([
             position.x, position.y, 0.0, 0.0,
@@ -69,17 +74,24 @@ export class SpriteComponent implements IRenderable<"basic_selectable">, ISelect
         gl.enableVertexAttribArray(1);
         gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 16, 8);
 
-        // gl.bindVertexArray(null);
+        this.radioGroup = radioGroup;
+        radioGroup.addRadioButton(this);
     }
 
-    public render(): void {
+    processPress(): void {
+        this.radioGroup.processRadioButtonPressed(this);
+    }
+
+    processRelease(): void {
+    }
+
+    public containsPosition(x: number, y: number): boolean {
+        return this.boundingBox.contains(x, y);
+    }
+
+    render() {
         const gl = State.currentGraphicsContext!;
-
-        // Set uniforms
-        const transformLocation = ProgramDB.getProgram(this).getUniformLocation("transform");
-
-        gl.uniformMatrix4fv(transformLocation, false, State.currentCamera?.getTransformationMatrix().transpose().matrix!);
-
+        
         const selectionLocation = ProgramDB.getProgram(this).getUniformLocation("isSelected");
         if(this.isSelected) {
             gl.uniform1f(selectionLocation, 1);
@@ -87,45 +99,18 @@ export class SpriteComponent implements IRenderable<"basic_selectable">, ISelect
             gl.uniform1f(selectionLocation, 0);
         }
 
-        // Bind texture
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this.texture.texture);
+        if(this.isDown) {
+            gl.bindTexture(gl.TEXTURE_2D, this.textureOn.texture);
+        } else {
+            gl.bindTexture(gl.TEXTURE_2D, this.textureOff.texture);
+        }
+
         
         const samplerLocation = ProgramDB.getProgram(this).getUniformLocation("sampler");
         gl.uniform1i(samplerLocation, 0);
         
-        // Draw
         gl.bindVertexArray(this.VAO);
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, 0);
-        // gl.bindVertexArray(null);
     }
 
-    // TODO: Factor of two?
-    public containsPosition(x: number, y: number): boolean {
-        const transform = State.currentCamera?.getInverseTransformationMatrix()!;
-        let world_position = Vec4d.mmul(
-                            transform,
-                            new Vec4d(x, y, 0, 1)
-                        );
-        world_position = Vec4d.smul(world_position,(1.0/world_position.w));
-        let world_position3 = new Vec3d(world_position.x, world_position.y, 0);
-        return this.boundingBox.contains(world_position3.x, world_position3.y);
-    }
-
-
-    public getPosition(): Vec2d {
-        return this.position;
-    }
-
-
-    public getSize(): Vec2d {
-        return this.size;
-    }
-
-    public destroy(): void {
-        const gl = State.currentGraphicsContext!;
-        if (this.VAO) gl.deleteVertexArray(this.VAO);
-        if (this.VBO) gl.deleteBuffer(this.VBO);
-        if (this.EBO) gl.deleteBuffer(this.EBO);
-    }
 }
