@@ -1,7 +1,7 @@
 import { Box } from "../../geometry/Box.js";
 import { Vec2d } from "../../geometry/Vec2d.js";
-export interface ISelectable {
+export interface IHoverable {
     boundingBox: Box<"world">;
-    isSelected: boolean;
+    isHovered: boolean;
     containsPosition(normPosition: Vec2d<"normalized">): boolean;
 }

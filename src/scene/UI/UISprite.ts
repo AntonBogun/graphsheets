@@ -5,21 +5,23 @@ import { State } from "../../State.js";
 import { Box } from "../../geometry/Box.js";
 import { ProgramDB } from "../../shaders/ProgramDB.js";
 import { ISelectable } from "../interaction/ISelectable.js";
-export class UISprite implements IRenderable<"interface">, ISelectable {
+import { IHoverable } from "../interaction/IHoverable.js";
+export class UISprite implements IRenderable<"interface">, ISelectable, IHoverable {
     public renderingType = "interface" as const;
-    private position: Vec2d;
-    private size: Vec2d;
+    private position: Vec2d<"world">;
+    private size: Vec2d<"world">;
     private texture: Texture;
     private VAO: WebGLVertexArrayObject;
     private VBO: WebGLBuffer;
     private EBO: WebGLBuffer;
-    public boundingBox: Box;
+    public boundingBox: Box<"world">;
     public isSelected: boolean = false;
+    public isHovered: boolean = false;
 
     constructor(
         texture: Texture,
-        position: Vec2d = new Vec2d(0, 0),
-        size: Vec2d = new Vec2d(1, 1),
+        position: Vec2d<"world"> = new Vec2d(0, 0, "world"),
+        size: Vec2d<"world"> = new Vec2d(1, 1, "world"),
     ) {
         this.position = position;
         this.size = size;
@@ -36,7 +38,8 @@ export class UISprite implements IRenderable<"interface">, ISelectable {
             position.x,
             position.y,
             size.x,
-            size.y
+            size.y,
+            "world"
         );
 
         const indices = new Uint32Array([
@@ -66,8 +69,16 @@ export class UISprite implements IRenderable<"interface">, ISelectable {
         gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 16, 8);
     }
 
-    public containsPosition(x: number, y: number): boolean {
-        return this.boundingBox.contains(x, y);
+    public containsPosition(position: Vec2d<"normalized">): boolean {
+        // Implicit conversion from World to Normalized
+        let adjustedBox = new Box(
+                                    this.boundingBox.xi*window.innerHeight/window.innerWidth, 
+                                    this.boundingBox.yi, 
+                                    this.boundingBox.width,
+                                    this.boundingBox.height,
+                                    "normalized"
+                                );
+        return adjustedBox.contains(position);
     }
 
     render() {
@@ -79,6 +90,9 @@ export class UISprite implements IRenderable<"interface">, ISelectable {
         } else {
             gl.uniform1f(selectionLocation, 0);
         }
+
+        const arLocation = ProgramDB.getProgram(this).getUniformLocation("aspectRatio");
+        gl.uniform1f(arLocation, window.innerHeight/window.innerWidth);
 
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.texture.texture);

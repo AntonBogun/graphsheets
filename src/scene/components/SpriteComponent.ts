@@ -9,21 +9,24 @@ import { Box } from "../../geometry/Box.js";
 import { ISelectable } from "../interaction/ISelectable.js";
 import { Vec4d } from "../../geometry/Vec4d.js";
 import { Vec3d } from "../../geometry/Vec3d.js";
-export class SpriteComponent implements IRenderable<"basic_selectable">, ISelectable {
+import { IMovable } from "../interaction/IMovable.js";
+import { IHoverable } from "../interaction/IHoverable.js";
+export class SpriteComponent implements IRenderable<"basic_selectable">, ISelectable, IMovable, IHoverable {
     public renderingType: "basic_selectable" = "basic_selectable";
-    private position: Vec2d;
-    private size: Vec2d;
+    public position: Vec2d<"world">;
+    private size: Vec2d<"world">;
     private texture: Texture; // Your texture type
     private VAO: WebGLVertexArrayObject;
     private VBO: WebGLBuffer;
     private EBO: WebGLBuffer;
-    public boundingBox: Box;
+    public boundingBox: Box<"world">;
     public isSelected: boolean = false;
+    public isHovered: boolean = false;
 
     constructor(
         texture: Texture,
-        position: Vec2d = new Vec2d(0, 0),
-        size: Vec2d = new Vec2d(1, 1),
+        position: Vec2d<"world"> = new Vec2d(0, 0, "world"),
+        size: Vec2d<"world"> = new Vec2d(1, 1, "world"),
     ) {
         this.position = position;
         this.size = size;
@@ -40,7 +43,8 @@ export class SpriteComponent implements IRenderable<"basic_selectable">, ISelect
             position.x,
             position.y,
             size.x,
-            size.y
+            size.y,
+            "world"
         );
 
         const indices = new Uint32Array([
@@ -72,6 +76,20 @@ export class SpriteComponent implements IRenderable<"basic_selectable">, ISelect
         // gl.bindVertexArray(null);
     }
 
+    public setPosition(position: Vec2d<"world">): void {
+        this.position = position;
+        this.boundingBox.setPosition(position);
+        const vertices = new Float32Array([
+            position.x, position.y, 0.0, 0.0,
+            position.x, position.y + this.size.y, 0.0, 1.0,
+            position.x + this.size.x, position.y, 1.0, 0.0,
+            position.x + this.size.x, position.y + this.size.y, 1.0, 1.0 
+        ]);
+        const gl = State.currentGraphicsContext!;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, vertices);
+    }
+
     public render(): void {
         const gl = State.currentGraphicsContext!;
 
@@ -101,24 +119,18 @@ export class SpriteComponent implements IRenderable<"basic_selectable">, ISelect
     }
 
     // TODO: Factor of two?
-    public containsPosition(x: number, y: number): boolean {
-        const transform = State.currentCamera?.getInverseTransformationMatrix()!;
-        let world_position = Vec4d.mmul(
-                            transform,
-                            new Vec4d(x, y, 0, 1)
-                        );
-        world_position = Vec4d.smul(world_position,(1.0/world_position.w));
-        let world_position3 = new Vec3d(world_position.x, world_position.y, 0);
-        return this.boundingBox.contains(world_position3.x, world_position3.y);
+    public containsPosition(normPosition: Vec2d<"normalized">): boolean {
+        let world_position = State.currentCamera?.normalizedToWorld(normPosition)!;
+        return this.boundingBox.contains(world_position);
     }
 
 
-    public getPosition(): Vec2d {
+    public getPosition(): Vec2d<"world"> {
         return this.position;
     }
 
 
-    public getSize(): Vec2d {
+    public getSize(): Vec2d<"world"> {
         return this.size;
     }
 

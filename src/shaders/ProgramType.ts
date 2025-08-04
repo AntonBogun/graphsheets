@@ -8,6 +8,8 @@ export function getSourceFiles(type: ProgramTypeAssociation): [string, string] {
             return ["src/shaders/sources/vertSelectable.glsl", "src/shaders/sources/fragSelectable.glsl"];
         case "interface":
             return ["src/shaders/sources/vertInterface.glsl", "src/shaders/sources/fragInterface.glsl"];
+        case "selection":
+            return ["src/shaders/sources/vertSelection.glsl", "src/shaders/sources/fragSelection.glsl"];
         default:
             throw new Error(`No program type ${type} found`);
     }

@@ -7,10 +7,11 @@ import { ProgramDB } from "../../shaders/ProgramDB.js";
 import { ISelectable } from "../interaction/ISelectable.js";
 import { IClickable } from "../interaction/IClickable.js";
 import { UIRadioGroup } from "./UIRadioGroup.js";
-export class UIRadioButton implements IRenderable<"interface">, ISelectable, IClickable {
+import { IHoverable } from "../interaction/IHoverable.js";
+export class UIRadioButton implements IRenderable<"interface">, ISelectable, IClickable, IHoverable {
     public renderingType = "interface" as const;
-    private position: Vec2d;
-    private size: Vec2d;
+    private position: Vec2d<"world">;
+    private size: Vec2d<"world">;
     private textureOff: Texture;
     private textureOn: Texture;
     private VAO: WebGLVertexArrayObject;
@@ -18,21 +19,24 @@ export class UIRadioButton implements IRenderable<"interface">, ISelectable, ICl
     private EBO: WebGLBuffer;
     public radioGroup: UIRadioGroup;
     public isDown: boolean;
-    public boundingBox: Box;
+    public boundingBox: Box<"world">;
     public isSelected: boolean = false;
+    public isHovered: boolean = false;
+    public clickCallback: () => void;
 
     constructor(
         textureOff: Texture,
         textureOn: Texture,
         radioGroup: UIRadioGroup,
-        position: Vec2d = new Vec2d(0, 0),
-        size: Vec2d = new Vec2d(1, 1),
+        position: Vec2d<"world"> = new Vec2d(0, 0, "world"),
+        size: Vec2d<"world"> = new Vec2d(1, 1, "world"),
     ) {
         this.isDown = false;
         this.position = position;
         this.size = size;
         this.textureOff = textureOff;
         this.textureOn = textureOn;
+        this.clickCallback = () => {};
         
         const vertices = new Float32Array([
             position.x, position.y, 0.0, 0.0,
@@ -45,7 +49,8 @@ export class UIRadioButton implements IRenderable<"interface">, ISelectable, ICl
             position.x,
             position.y,
             size.x,
-            size.y
+            size.y,
+            "world"
         );
 
         const indices = new Uint32Array([
@@ -78,15 +83,28 @@ export class UIRadioButton implements IRenderable<"interface">, ISelectable, ICl
         radioGroup.addRadioButton(this);
     }
 
+    registerClickCallback(clickCallback: () => void) {
+        this.clickCallback = clickCallback;
+    }
+
     processPress(): void {
+        this.clickCallback();
         this.radioGroup.processRadioButtonPressed(this);
     }
 
     processRelease(): void {
     }
 
-    public containsPosition(x: number, y: number): boolean {
-        return this.boundingBox.contains(x, y);
+    public containsPosition(position: Vec2d<"normalized">): boolean {
+        // Implicit conversion from World to Normalized
+        let adjustedBox = new Box(
+                                    (this.boundingBox.xi+1)*window.innerHeight/window.innerWidth - 1, 
+                                    this.boundingBox.yi, 
+                                    this.boundingBox.width*window.innerHeight/window.innerWidth,
+                                    this.boundingBox.height,
+                                    "normalized"
+                                );
+        return adjustedBox.contains(position);
     }
 
     render() {
@@ -104,7 +122,9 @@ export class UIRadioButton implements IRenderable<"interface">, ISelectable, ICl
         } else {
             gl.bindTexture(gl.TEXTURE_2D, this.textureOff.texture);
         }
-
+        
+        const arLocation = ProgramDB.getProgram(this).getUniformLocation("aspectRatio");
+        gl.uniform1f(arLocation, window.innerHeight/window.innerWidth);
         
         const samplerLocation = ProgramDB.getProgram(this).getUniformLocation("sampler");
         gl.uniform1i(samplerLocation, 0);

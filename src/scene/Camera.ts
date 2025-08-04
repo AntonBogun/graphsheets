@@ -53,5 +53,35 @@ export class Camera {
         return vMatrix.mul(pMatrix);
     }
 
+    public mouseToNormalized(mousePosition: Vec2d<"mouse">): Vec2d<"normalized"> {
+        let normalizedX = (mousePosition.x / window.innerWidth) * 2 - 1;
+        let normalizedY = 1 - (mousePosition.y / window.innerHeight) * 2;
+        return new Vec2d(normalizedX, normalizedY, "normalized");
+    }
+
+    public normalizedToWorld(mousePosition: Vec2d<"normalized">): Vec2d<"world"> {
+        const transform = State.currentCamera?.getInverseTransformationMatrix()!;
+        let world_position = Vec4d.mmul(
+                            transform,
+                            new Vec4d(mousePosition.x, mousePosition.y, 0, 1)
+                        );
+        world_position = Vec4d.smul(world_position,(1.0/world_position.w));
+        let world_position2 = new Vec2d(world_position.x, world_position.y, "world");
+        return world_position2;
+    }
+
+    public mouseToWorld(mousePosition: Vec2d<"mouse">): Vec2d<"world"> {
+        return this.normalizedToWorld(this.mouseToNormalized(mousePosition));
+    }
+
+    public worldToNormalized(worldPosition: Vec2d<"world">): Vec2d<"normalized"> {
+        const transform = State.currentCamera?.getTransformationMatrix()!;
+        let normalized_position = Vec4d.mmul(
+            transform,
+            new Vec4d(worldPosition.x, worldPosition.y, 0, 1)
+        );
+        normalized_position = Vec4d.smul(normalized_position, (1.0 / normalized_position.w));
+        return new Vec2d(normalized_position.x, normalized_position.y, "normalized");
+    }
 
 }

@@ -33,7 +33,7 @@ Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg"), 
         canvas.height = window.innerHeight;
         gl.viewport(0, 0, window.innerWidth, window.innerHeight);
 
-        gl.clearColor(1.0, 1.0, 1.0, 1.0);
+        gl.clearColor(63.0/255.0, 63.0/255.0, 63.0/255.0, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         RenderManager.getRenderManager().renderByProgram();
@@ -44,18 +44,24 @@ Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg"), 
     }
 
     const cam = new Camera();
-    InteractionManager.getInstance().addMouseHandler(new MouseSelectionHandler());
-    InteractionManager.getInstance().addMouseHandler(new MouseClickHandler());
-    
     const scene = new Scene([]);
     const mand = TextureDB.getTextureDB().getTexture(mandelbrot);
     const jul = TextureDB.getTextureDB().getTexture(julia);
     const sprite1 = new SpriteComponent(mand);
-    const sprite2 = new SpriteComponent(mand, new Vec2d(0.5, 0.5), new Vec2d(0.5, 0.5));
+    const sprite2 = new SpriteComponent(mand, new Vec2d(0.5, 0.5, "world"), new Vec2d(0.5, 0.5, "world"));
     const radioCollection = new UIRadioGroup();
-    const radio1 = new UIRadioButton(mand, jul, radioCollection, new Vec2d(-1,-1), new Vec2d(0.5,0.5));
-    const radio2 = new UIRadioButton(mand, jul, radioCollection, new Vec2d(-0.5,-1), new Vec2d(0.5,0.5));
-    const radio3 = new UIRadioButton(mand, jul, radioCollection, new Vec2d(0,-1), new Vec2d(0.5,0.5));
+    const radio1 = new UIRadioButton(mand, jul, radioCollection, new Vec2d(-1,-1, "world"), new Vec2d(0.5,0.5, "world"));
+    const radio2 = new UIRadioButton(mand, jul, radioCollection, new Vec2d(-0.5,-1, "world"), new Vec2d(0.5,0.5, "world"));
+    const radio3 = new UIRadioButton(mand, jul, radioCollection, new Vec2d(0,-1, "world"), new Vec2d(0.5,0.5, "world"));
+    radio1.registerClickCallback( () => {
+        InteractionManager.getInstance().changeInterationType("default");
+    });
+
+    radio2.registerClickCallback( () => {
+        InteractionManager.getInstance().changeInterationType("move");
+    });
+
+    radio1.processPress();
 
     scene.addComponent(sprite1);
     scene.addComponent(sprite2);

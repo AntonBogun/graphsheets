@@ -2,6 +2,7 @@ import { IMouseHandler } from "./IMouseHandler";
 import { State } from "../../State.js";
 import { ComponentHelper } from "../components/ComponentHelper.js";
 import { IClickable } from "./IClickable.js";
+import { Vec2d } from "../../geometry/Vec2d.js";
 export class MouseClickHandler implements IMouseHandler{
     clickedComponent: IClickable|null;
     constructor(){
@@ -12,7 +13,8 @@ export class MouseClickHandler implements IMouseHandler{
         if(scene) {
             for(const component of scene?.getComponents()) {
                 if(ComponentHelper.isClickable(component)){
-                    if(component.containsPosition(2*(event.pageX-window.innerWidth/2)/window.innerWidth, -2*(event.pageY-window.innerHeight/2)/window.innerHeight)) {
+                    let normPos = new Vec2d(2*(event.pageX-window.innerWidth/2)/window.innerWidth, -2*(event.pageY-window.innerHeight/2)/window.innerHeight, "normalized");
+                    if(component.containsPosition(normPos)) {
                         component.processPress();
                         this.clickedComponent = component;
                     }
