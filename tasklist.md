@@ -38,10 +38,15 @@ TODO:
 - Create a Subgraph
 - Scene changes with Subgraphs
 
-# 03-08-02025
+# 03-08-2025
 - Vector<T> Array implementation
 - Attempt at rendering basic monospace text
 
 TODO:
 - Figure out the textures so they don't draw upside down (or just flip the camera)
-- Figure out why the text is boxy when zoomed in and so large and how to do glyph offsets correctly
+- Figure out why the text is boxy when zoomed in and has holes and so large and how to do glyph offsets correctly
+
+# 04-08-2025
+- test_img.png added
+- fragment shader can draw numbers per pixel when zoomed in
+- options can be passed into .getTexture (e.g. {minFilter: "nearest", magFilter: "nearest"})

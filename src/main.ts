@@ -46,6 +46,10 @@ import vertexShaderSource from './shaders/vert.glsl?raw';
 import fragmentShaderSource from './shaders/frag.glsl?raw';
 const vertexShaderFile = new SourceFile("vert.glsl", vertexShaderSource);
 const fragmentShaderFile = new SourceFile("frag.glsl", fragmentShaderSource);
+import testFragmentSource from './shaders/test-frag.glsl?raw';
+const testFragmentFile = new SourceFile("test-frag.glsl.glsl", testFragmentSource);
+import testVertSource from './shaders/test-vert.glsl?raw';
+const testVertFile = new SourceFile("test-vert.glsl.glsl", testVertSource);
 
 import textVertexShaderSource from './shaders/text-vert.glsl?raw';
 import textFragmentShaderSource from './shaders/text-frag.glsl?raw';
@@ -80,11 +84,11 @@ class Vec2d {
     static dot(a: Vec2d, b: Vec2d): number {
         return a.x * b.x + a.y * b.y;
     }
-    static copy(v: Vec2d): Vec2d {
-        return new Vec2d(v.x, v.y);
+    public copy(): Vec2d {
+        return new Vec2d(this.x, this.y);
     }
-    static toString(v: Vec2d): string {
-        return `(${v.x}, ${v.y})`;
+    public toString(): string {
+        return `(${this.x}, ${this.y})`;
     }
 }
 class Vec3d {
@@ -134,7 +138,12 @@ class Vec4d {
     static smul(v: Vec4d, num: number): Vec4d {
         return new Vec4d(v.x * num, v.y * num, v.z * num, v.w * num);
     }
-
+    public copy(): Vec4d {
+        return new Vec4d(this.x, this.y, this.z, this.w);
+    }
+    public toString(): string {
+        return `(${this.x}, ${this.y}, ${this.z}, ${this.w})`;
+    }
 }
 // #endregion
 
@@ -682,7 +691,7 @@ class Camera {
     readonly wheel_zoom_factor = 1.4;
 
     constructor() {
-        this.width = 1.0;
+        this.width = 0.5;//0.5 == from -0.5 to +0.5 == 1 unit in world space
         this.world_last_pos = new Vec2d(0,0);
         this.pos = new Vec2d(0, 0);
         this.screen_start_pos = new Vec2d(0, 0);
@@ -740,8 +749,13 @@ class Camera {
             this.is_dragging = true;
             const e_pos = new Vec2d(event.pageX, -event.pageY);
             this.screen_start_pos = e_pos;
-            this.world_last_pos = Vec2d.copy(this.pos);
+            this.world_last_pos = this.pos.copy();
             // console.log("mousedown",this.screen_start_pos);
+            const inverse_pos = Vec4d.mmul(this.getInverseTransformationMatrix(), new Vec4d(
+                (e_pos.x / window.innerWidth) * 2 - 1,
+                (e_pos.y / window.innerHeight) * 2 + 1,
+                0, 1));
+            console.log(`MouseDown at ${e_pos}, ${inverse_pos}`);
         }
 
         document.onmousemove = (event) => {
@@ -754,7 +768,7 @@ class Camera {
         document.onmouseup = (event) => {
             const e_pos = new Vec2d(event.pageX, -event.pageY);
             this.dragCamera(e_pos);
-            this.world_last_pos = Vec2d.copy(this.pos);
+            this.world_last_pos = this.pos.copy();
             this.screen_start_pos = new Vec2d(window.innerWidth / 2, -window.innerHeight / 2);
             this.is_dragging = false;
             // console.log("mouseup",this.screen_start_pos);
@@ -782,7 +796,7 @@ class Camera {
                 delta=this.wheel_zoom_factor ** delta;
                 // console.log(`Zooming camera by ${event.deltaX}, ${event.deltaY} with delta: ${delta}`);
                 this.zoomCamera(new Vec2d(event.pageX, -event.pageY), delta);
-                this.world_last_pos = Vec2d.copy(this.pos);
+                this.world_last_pos = this.pos.copy();
                 // console.log("wheel",this.screen_start_pos);
             }
         , { passive: false });
@@ -922,10 +936,18 @@ class ProgramDB {
 
 //ANCHOR Texture, TextureDB
 // #region Texture(DB)
+interface TextureOptions {
+    wrapS: number;
+    wrapT: number;
+    minFilter: number;
+    magFilter: number;
+}
 class Texture{
     source: TextureFile;
     texture: WebGLTexture;
-    constructor(gl:WebGL2RenderingContext,source: TextureFile){
+    gl: WebGL2RenderingContext;
+    constructor(gl:WebGL2RenderingContext,source: TextureFile, textureOptions: Partial<TextureOptions> = {}){
+        this.gl = gl;
         const texture = gl.createTexture();
         if (!texture) {
             throw new Error("Failed to create texture");
@@ -934,10 +956,29 @@ class Texture{
         this.texture = texture;
         gl.bindTexture(gl.TEXTURE_2D, this.texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source.image);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        this.setWrapS(textureOptions.wrapS ?? gl.CLAMP_TO_EDGE);
+        this.setWrapT(textureOptions.wrapT ?? gl.CLAMP_TO_EDGE);
+        this.setMinFilter(textureOptions.minFilter ?? gl.LINEAR);
+        this.setMagFilter(textureOptions.magFilter ?? gl.LINEAR)
+    }
+    setWrapS(value: number): void {
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, value);
+    }
+
+    setWrapT(value: number): void {
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, value);
+    }
+
+    setMinFilter(value: number): void {
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, value);
+    }
+
+    setMagFilter(value: number): void {
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, value);
     }
 }
 class TextureDB {
@@ -946,12 +987,12 @@ class TextureDB {
     constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
     }
-    getTexture(source: TextureFile): Texture {
+    getTexture(source: TextureFile, textureOptions: Partial<TextureOptions> = {}): Texture {
         const key = source.filename;
         if (this.textures.has(key)) {
             return this.textures.get(key)!;
         }
-        const texture = new Texture(this.gl, source);
+        const texture = new Texture(this.gl, source, textureOptions);
         this.textures.set(key, texture);
         return texture;
     }
@@ -1173,7 +1214,7 @@ class TextRenderer extends RenderObject {
             if (!glyph){
                 glyph = this.fontInfo.glyphs.get(63)!; // ASCII '?'
             }
-            console.log(glyph);
+            // console.log(glyph);
             const x1 = cursorX + glyph.xoffset * scale;
             // const y1 = cursorY + (-this.fontInfo.lineHeight+ glyph.yoffset) * scale;
             const y1 = cursorY;
@@ -1464,11 +1505,13 @@ window.onload = () => {
 Promise.all([
     IO.openImage("mandelbrot_set.jpg"),
     IO.openImage("fonts/Inconsolata-Regular.png"),
-    IO.openFile("fonts/Inconsolata-Regular.json")
+    IO.openFile("fonts/Inconsolata-Regular.json"),
+    IO.openImage("test_img.png"),
 ]).then(([
     mandelbrot,
     inconsolataTexture,
-    inconsolataJsonFile
+    inconsolataJsonFile,
+    testImageFile
 ]) => {
     console.log("window.onload");
 
@@ -1543,19 +1586,37 @@ Promise.all([
     
     const program = programDB.getProgram(vertexShaderFile, fragmentShaderFile);
     program.use();
+    const testProgram = programDB.getProgram(testVertFile, testFragmentFile);
     const textProgram = programDB.getProgram(textVertexShaderFile, textFragmentShaderFile);
+    
     const fontTexture = textureDB.getTexture(inconsolataTexture);
     const textRenderer = new TextRenderer(gl, textProgram, fontTexture, fontInfo);
-
     textRenderer.setText(gl, "Hello, World!\nnewline test\n\nnon-ascii test вувршщ日本語テスト\nproof gggg yoffset is required...", 0, -2, 1/256);
 
     const texture = textureDB.getTexture(mandelbrot);
+    const testTexture = textureDB.getTexture(testImageFile,{minFilter: gl.NEAREST, magFilter: gl.NEAREST});
+    
     const renderQueue = new RenderQueue();
-    const sprite1 = new Sprite(gl,program, texture);
+    const sprite1 = new Sprite(gl,program, texture, new Vec2d(-0.5, 0.5));
     const sprite2 = new Sprite(gl,program, texture, new Vec2d(0.5, 0.5), new Vec2d(0.5, 0.5));
+    const sprite3 = new Sprite(gl,program, testTexture);
+    sprite3.program = testProgram;
+    
     renderQueue.add(sprite1);
     renderQueue.add(sprite2);
     renderQueue.add(textRenderer);
+    renderQueue.add(sprite3);
+    
+
+    //make variables available in the console
+    (window as any).gl = gl;
+    (window as any).canvas = canvas;
+    (window as any).cam = cam;
+    (window as any).renderQueue = renderQueue;
+    (window as any).textRenderer = textRenderer;
+    (window as any).programDB = programDB;
+    (window as any).shaderDB = shaderDB;
+    (window as any).textureDB = textureDB;
 
 
     animationLoop();
