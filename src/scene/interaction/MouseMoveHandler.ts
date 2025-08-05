@@ -45,5 +45,7 @@ export class MouseMoveHandler implements IMouseHandler {
         }
     }
     
-
+    clean(): void {
+        
+    }
 }

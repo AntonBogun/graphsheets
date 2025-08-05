@@ -7,4 +7,10 @@ export class State {
     static currentGraphicsContext: WebGL2RenderingContext|null;
     static currentScene: Scene|null;
     static selectedComponents: ISelectable[] = [];
+    static clearSelection(): void {
+        for(const component of this.selectedComponents) {
+            component.isSelected = false;
+       }
+       this.selectedComponents = [];
+    }
 }

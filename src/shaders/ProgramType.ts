@@ -1,4 +1,4 @@
-export const ProgramTypes = ["basic", "basic_selectable", "interface"]
+export const ProgramTypes = ["basic", "basic_selectable", "interface", "selection"]
 export type ProgramTypeAssociation = typeof ProgramTypes[number];
 export function getSourceFiles(type: ProgramTypeAssociation): [string, string] {
     switch  (type) {

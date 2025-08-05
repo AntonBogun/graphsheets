@@ -3,6 +3,7 @@ import { ISelectable } from "../interaction/ISelectable";
 import { Vec2d } from "../../geometry/Vec2d.js";
 import { IMovable } from "../interaction/IMovable.js";
 import { IHoverable } from "../interaction/IHoverable.js";
+import { IRenderable } from "../../shaders/IRenderable";
 export class ComponentHelper {
     static isSelectable(component: any): component is ISelectable {
         return ('boundingBox' in component) && ('isSelected' in component);
@@ -15,5 +16,8 @@ export class ComponentHelper {
     }
     static isHoverable(component: any): component is IHoverable {
         return 'isHovered' in component;
+    }
+    static isUIComponent(component: any): component is IRenderable<"interface">{
+        return ('renderingType' in component) && (component.renderingType === "interface");
     }
 }

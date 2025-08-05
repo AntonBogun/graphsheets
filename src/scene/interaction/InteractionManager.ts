@@ -9,7 +9,7 @@ import { MouseSelectionHandler } from "./MouseSelectionHandler.js";
 import { MouseClickHandler } from "./MouseClickHandler.js";
 import { MouseMoveHandler } from "./MouseMoveHandler.js";
 import { MouseHoverHandler } from "./MouseHoverHandler.js";
-export type InteractionType = "default" | "move"
+export type InteractionType = "default" | "move" | "select"
 export class InteractionManager {
     // private lastPosition: Vec2d;
     // private initialPosition: Vec2d;
@@ -25,20 +25,33 @@ export class InteractionManager {
         // this.isDragging = false;
     }
 
+    static isUIClick(pos: Vec2d<"world">) {
+        for(const component of State.currentScene?.getComponents().filter(component => ComponentHelper.isUIComponent(component) && ComponentHelper.isClickable(component))!){
+            if(component.containsPosition(State.currentCamera?.worldToNormalized(pos)!)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public changeInterationType(interactionMode: InteractionType) {
         switch(interactionMode){
             case "default":
                 this.removeMouseHandlers();
                 this.addMouseHandler(new MouseClickHandler());
-                this.addMouseHandler(new MouseSelectionHandler());
                 this.addMouseHandler(new MouseHoverHandler());
                 break;
             case "move":
                 this.removeMouseHandlers();
                 this.addMouseHandler(new MouseClickHandler());
-                this.addMouseHandler(new MouseSelectionHandler());
                 this.addMouseHandler(new MouseHoverHandler());
                 this.addMouseHandler(new MouseMoveHandler());
+                break;
+            case "select":
+                this.removeMouseHandlers();
+                this.addMouseHandler(new MouseClickHandler());
+                this.addMouseHandler(new MouseHoverHandler());
+                this.addMouseHandler(new MouseSelectionHandler());
                 break;
             default:
                 new Error(`Interaction mode ${interactionMode} not implemented!`)
@@ -61,6 +74,9 @@ export class InteractionManager {
     }
 
     public removeMouseHandlers() {
+        for(const mouseHandler of this.mouseHandlers) {
+            mouseHandler.clean();
+        }
         this.mouseHandlers = [];
     }
 

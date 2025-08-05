@@ -20,7 +20,8 @@ const canvas = document.getElementById('glCanvas') as HTMLCanvasElement;
 const gl = canvas.getContext('webgl2')!;
 if (!gl) throw new Error('WebGL not supported');
 State.currentGraphicsContext = gl;
-
+gl.enable(gl.BLEND);
+gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg"), IO.openImage("julia.png")]).then(([_, mandelbrot, julia]) => {
 
     canvas.width = window.innerWidth;
@@ -59,6 +60,9 @@ Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg"), 
 
     radio2.registerClickCallback( () => {
         InteractionManager.getInstance().changeInterationType("move");
+    });
+    radio3.registerClickCallback( () => {
+        InteractionManager.getInstance().changeInterationType("select");
     });
 
     radio1.processPress();

@@ -43,4 +43,13 @@ export class MouseHoverHandler implements IMouseHandler{
             }  
         }
     }
+    clean(): void {
+        for(const component of this.hoveredComponents) {
+            if(component.isHovered && component.isSelected) {
+                component.isSelected = false;
+                component.isHovered = false;
+            }
+        }
+        this.hoveredComponents = [];
+    }
 }

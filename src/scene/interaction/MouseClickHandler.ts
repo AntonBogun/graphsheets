@@ -30,4 +30,8 @@ export class MouseClickHandler implements IMouseHandler{
     }
     processMouseMove(event: MouseEvent, ...args: any[]) {
     }
+    
+    clean(): void {
+        
+    }
 }
