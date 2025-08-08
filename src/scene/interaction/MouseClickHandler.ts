@@ -1,4 +1,4 @@
-import { IMouseHandler } from "./IMouseHandler";
+import { IMouseHandler } from "./IMouseHandler.js";
 import { State } from "../../State.js";
 import { ComponentHelper } from "../components/ComponentHelper.js";
 import { IClickable } from "./IClickable.js";

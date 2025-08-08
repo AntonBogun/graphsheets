@@ -1,5 +1,4 @@
 import { Texture } from "../shaders/Texture.js";
-import { TextureFile } from "../files/TextureFile.js";
 export class TextureDB {
     textures: Map<string, Texture> = new Map();
     private static instance: TextureDB;
@@ -10,13 +9,15 @@ export class TextureDB {
         }
         return TextureDB.instance;
     }
-    getTexture(source: TextureFile): Texture {
-        const key = source.filename;
-        if (this.textures.has(key)) {
-            return this.textures.get(key)!;
+
+    registerTexture(source: string, texture: Texture): void {
+        this.textures.set(source, texture);
+    }
+
+    getTexture(source: string): Texture|null {
+        if (this.textures.has(source)) {
+            return this.textures.get(source)!;
         }
-        const texture = new Texture(source);
-        this.textures.set(key, texture);
-        return texture;
+        throw new Error(`Texture with source ${source} does not exist!`);
     }
 }

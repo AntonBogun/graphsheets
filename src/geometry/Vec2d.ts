@@ -1,5 +1,7 @@
+import { ISerializable } from "../files/ISerializable";
+
 export type coordinateSpaceType = "world" | "mouse" | "normalized";
-export class Vec2d<T extends coordinateSpaceType> {
+export class Vec2d<T extends coordinateSpaceType> implements ISerializable {
     x: number;
     y: number;
     coordinateSpace: T;
@@ -33,4 +35,21 @@ export class Vec2d<T extends coordinateSpaceType> {
     dot(b: Vec2d<T>): number {
         return this.x * b.x + this.y * b.y;
     }
+
+    serialize(): Promise<any> {
+        return new Promise((resolve) => {
+            resolve({
+                x: this.x,
+                y: this.y,
+                coordinateSpace: this.coordinateSpace
+            });
+        });
+    }
+
+    static deserialize(data: any): Promise<Vec2d<any>> {
+        return new Promise((resolve) => {
+            resolve(new Vec2d(data.x, data.y, data.coordinateSpace));
+        });
+    }
+
 }

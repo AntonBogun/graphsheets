@@ -11,7 +11,10 @@ import { Vec4d } from "../../geometry/Vec4d.js";
 import { Vec3d } from "../../geometry/Vec3d.js";
 import { IMovable } from "../interaction/IMovable.js";
 import { IHoverable } from "../interaction/IHoverable.js";
-export class SpriteComponent implements IRenderable<"basic_selectable">, ISelectable, IMovable, IHoverable {
+import { IResizable } from "../interaction/IResizable.js";
+import { ISerializable } from "../../files/ISerializable.js";
+import { IO } from "../../files/io.js";
+export class SpriteComponent implements IRenderable<"basic_selectable">, ISelectable, IMovable, IHoverable, IResizable, ISerializable {
     public renderingType: "basic_selectable" = "basic_selectable";
     public position: Vec2d<"world">;
     private size: Vec2d<"world">;
@@ -74,6 +77,47 @@ export class SpriteComponent implements IRenderable<"basic_selectable">, ISelect
         gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 16, 8);
 
         // gl.bindVertexArray(null);
+    }
+
+    public serialize(): Promise<string> {
+        return new Promise((resolve) => {
+            let promises: Promise<string>[] = [];
+            promises.push(this.position.serialize());
+            promises.push(this.size.serialize());
+            promises.push(this.texture.serialize());
+            Promise.all(promises).then((serializedData) => {
+                resolve(JSON.stringify({
+                    position: serializedData[0],
+                    size: serializedData[1],
+                    texture: serializedData[2]
+                }));
+            });
+        });
+    }
+
+    public static deserialize(data: any): Promise<SpriteComponent> {
+        return Promise.all([
+            IO.deserialize(Vec2d, data.position),
+            IO.deserialize(Vec2d, data.size),
+            IO.deserialize(Texture, data.texture)
+        ]).then(([position, size, texture]) => {
+            const spriteComponent = new SpriteComponent(texture, position, size);
+            return spriteComponent;
+        });
+    }
+
+    public setSize(size: Vec2d<"world">): void {
+        this.size = size;
+        this.boundingBox.setSize(size);
+        const vertices = new Float32Array([
+            this.position.x, this.position.y, 0.0, 0.0,
+            this.position.x, this.position.y + size.y, 0.0, 1.0,
+            this.position.x + size.x, this.position.y, 1.0, 0.0,
+            this.position.x + size.x, this.position.y + size.y, 1.0, 1.0 
+        ]);
+        const gl = State.currentGraphicsContext!;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, vertices);
     }
 
     public setPosition(position: Vec2d<"world">): void {

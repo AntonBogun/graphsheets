@@ -30,4 +30,11 @@ export class Box<T extends coordinateSpaceType> {
         this.yf = this.yi + this.height;
     }
 
+    setSize(size: Vec2d<T>) {
+        this.width = size.x;
+        this.height = size.y;
+        this.xf = this.xi + this.width;
+        this.yf = this.yi + this.height;
+    }
+
 }

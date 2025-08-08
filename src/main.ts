@@ -22,7 +22,7 @@ if (!gl) throw new Error('WebGL not supported');
 State.currentGraphicsContext = gl;
 gl.enable(gl.BLEND);
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg"), IO.openImage("julia.png")]).then(([_, mandelbrot, julia]) => {
+Promise.all([ProgramManager.loadPrograms(), Texture.loadTexture("mandelbrot_set.png"), Texture.loadTexture("julia.png")]).then(([_, mandelbrot, julia]) => {
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -44,11 +44,11 @@ Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg"), 
         requestAnimationFrame(redraw);
     }
 
-    const cam = new Camera();
-    const scene = new Scene([]);
-    const mand = TextureDB.getTextureDB().getTexture(mandelbrot);
-    const jul = TextureDB.getTextureDB().getTexture(julia);
-    const sprite1 = new SpriteComponent(mand);
+    new Camera();
+    const scene = new Scene();
+    const mand = mandelbrot;
+    const jul = julia;
+    // const sprite1 = new SpriteComponent(mand);
     const sprite2 = new SpriteComponent(mand, new Vec2d(0.5, 0.5, "world"), new Vec2d(0.5, 0.5, "world"));
     const radioCollection = new UIRadioGroup();
     const radio1 = new UIRadioButton(mand, jul, radioCollection, new Vec2d(-1,-1, "world"), new Vec2d(0.5,0.5, "world"));
@@ -67,7 +67,7 @@ Promise.all([ProgramManager.loadPrograms(), IO.openImage("mandelbrot_set.jpg"), 
 
     radio1.processPress();
 
-    scene.addComponent(sprite1);
+    // scene.addComponent(sprite1);
     scene.addComponent(sprite2);
     scene.addComponent(radio1);
     scene.addComponent(radio2);

@@ -9,6 +9,8 @@ import { MouseSelectionHandler } from "./MouseSelectionHandler.js";
 import { MouseClickHandler } from "./MouseClickHandler.js";
 import { MouseMoveHandler } from "./MouseMoveHandler.js";
 import { MouseHoverHandler } from "./MouseHoverHandler.js";
+import { IKeyHandler } from "./IKeyHandler.js";
+import { KeyMouseClipboardHandler } from "./KeyMouseClipboardHandler.js";
 export type InteractionType = "default" | "move" | "select"
 export class InteractionManager {
     // private lastPosition: Vec2d;
@@ -16,12 +18,14 @@ export class InteractionManager {
     // private isDragging;
     private position: Vec3d;
     private mouseHandlers: IMouseHandler[];
+    private keyHandlers: IKeyHandler[];
     private static interactionManager: InteractionManager;
     private constructor() {
         // this.lastPosition = new Vec2d(0, 0);
         // this.initialPosition = new Vec2d(0, 0);
         this.position = new Vec3d(0, 0, 1.0);
         this.mouseHandlers = [];
+        this.keyHandlers = [];
         // this.isDragging = false;
     }
 
@@ -35,11 +39,15 @@ export class InteractionManager {
     }
 
     public changeInterationType(interactionMode: InteractionType) {
+        let clip = new KeyMouseClipboardHandler();
         switch(interactionMode){
             case "default":
                 this.removeMouseHandlers();
+                this.removeKeyHandlers();
                 this.addMouseHandler(new MouseClickHandler());
                 this.addMouseHandler(new MouseHoverHandler());
+                this.addKeyHandler(clip);
+                this.addMouseHandler(clip);
                 break;
             case "move":
                 this.removeMouseHandlers();
@@ -69,8 +77,16 @@ export class InteractionManager {
         this.mouseHandlers.push(mouseHandler);
     }
 
+    public addKeyHandler(keyHandler: IKeyHandler) {
+        this.keyHandlers.push(keyHandler);
+    }
+
     public removeMouseHandler(mouseHandler: IMouseHandler) {
         this.mouseHandlers = this.mouseHandlers.filter(handler => handler !== mouseHandler);
+    }
+
+    public removeKeyHandler(keyHandler: IKeyHandler) {
+        this.keyHandlers = this.keyHandlers.filter(handler => handler !== keyHandler);
     }
 
     public removeMouseHandlers() {
@@ -78,6 +94,13 @@ export class InteractionManager {
             mouseHandler.clean();
         }
         this.mouseHandlers = [];
+    }
+
+    public removeKeyHandlers() {
+        for(const keyHandler of this.keyHandlers) {
+            keyHandler.clean();
+        }
+        this.keyHandlers = [];
     }
 
     public setCurrentCamera(cam: Camera) {
@@ -88,6 +111,18 @@ export class InteractionManager {
 
     public bindEventListeners(): void {
     //MARK: Event Listeners
+
+        document.onkeydown = (event: KeyboardEvent) => {
+            for(const keyHandler of this.keyHandlers) {
+                keyHandler.processKeyDown(event);
+            }
+        }
+
+        document.onkeyup = (event: KeyboardEvent) => {
+            for(const keyHandler of this.keyHandlers) {
+                keyHandler.processKeyUp(event);
+            }
+        }
 
         document.onmousedown = (event) => {
             // this.isDragging = true;
@@ -137,13 +172,13 @@ export class InteractionManager {
         //     this.isDragging = false;
         // }
 
-        document.onkeydown = (event) => {
-            if(event.key == "+") {
-                this.position.z /= 2;
-            } else if(event.key == "-") {
-                this.position.z *= 2;
-            }
-        }
+        // document.onkeydown = (event) => {
+        //     if(event.key == "+") {
+        //         this.position.z /= 2;
+        //     } else if(event.key == "-") {
+        //         this.position.z *= 2;
+        //     }
+        // }
 
         document.addEventListener("wheel", (event) => {
                 event.preventDefault();

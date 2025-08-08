@@ -12,6 +12,11 @@ export class Scene {
         this.display();
     }
 
+    public removeNonUIComponents(): void {
+        this.components = this.components.filter(component => component.renderingType === "interface");
+        this.display();
+    }
+
     public removeComponent(component: IRenderable<any>): void {
         let index = this.components.indexOf(component);
         if(index !== -1) {
