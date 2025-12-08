@@ -125,7 +125,7 @@ public abstract class AbstractZoomableContainer extends JComponent {
 	
 	public void addZoomTransform(AffineTransform zoomTransform) {
 		//XXX
-		System.out.println(zoomTransform);
+//		System.out.println(zoomTransform);
 		this.prevScaleTransform = zoomTransform;
 		if(zoomTransform == null) return;
 		if(this.zoomTransform == null) this.zoomTransform = AffineTransform.getRotateInstance(0);

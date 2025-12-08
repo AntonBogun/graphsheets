@@ -1,16 +1,17 @@
 package fi.graphsheets;
 
 import java.awt.Color;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JLayer;
+import javax.swing.JOptionPane;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
 
-import fi.graphsheets.graphelements.Cell;
 import fi.graphsheets.graphelements.Edge;
 import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
@@ -27,7 +28,20 @@ public class Main{
 	public static void main(String[] args) throws InvocationTargetException, InterruptedException {
 		JFrame frame = new JFrame();
 		frame.setTitle("Graphsheets");
-		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(frame.DO_NOTHING_ON_CLOSE);
+		frame.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+			    int confirmed = JOptionPane.showConfirmDialog(null, 
+			        "Are you sure you want to quit?", "What a productive session!",
+			        JOptionPane.YES_NO_OPTION);
+
+			    if (confirmed == JOptionPane.YES_OPTION) {
+			      frame.dispose();
+			      System.exit(0);
+			    }
+			  }
+		});
+		
 		frame.getContentPane().setBackground(Color.BLACK);
 		
 		ArrayList<Node> nodes = new ArrayList<Node>();

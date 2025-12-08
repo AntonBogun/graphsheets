@@ -24,16 +24,19 @@ import fi.graphsheets.ui.ResizeMoveMouseAdapter;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
 import fi.graphsheets.ui.sheet.SheetContainerFactory;
 
+/**
+ * The LayerUI for zoomable containers that handles input events. Handles adding elements to graphs and scrolling to zoom.
+ */
 @SuppressWarnings("serial")
 public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableContainer> {
 	
+	@SuppressWarnings("unchecked")
 	public void installUI(JComponent c) {
 		super.installUI(c);
-	    @SuppressWarnings("unchecked")
 		JLayer<? extends AbstractZoomableContainer> l = (JLayer<? extends AbstractZoomableContainer>) c;
 		//For the future, make the events pass to the parent container transformed with the correct zoom transform
 	    //in order to allow for zooming to sub-pixel levels
-//	    
+	    
 	    l.setLayerEventMask(AWTEvent.MOUSE_WHEEL_EVENT_MASK | AWTEvent.KEY_EVENT_MASK | AWTEvent.MOUSE_EVENT_MASK);
 	    ResizeMoveMouseAdapter ma = new ResizeMoveMouseAdapter();
 //		l.getView().addMouseListener(ma);
@@ -51,6 +54,7 @@ public class ZoomableContainerControlLayer extends LayerUI<AbstractZoomableConta
 	@SuppressWarnings("unchecked")
 	@Override
     public void eventDispatched(AWTEvent e, JLayer<? extends AbstractZoomableContainer> l) {
+//		System.out.println(l.getView());
 		if(l.getView().isZoomingEnabled()) {
 			super.eventDispatched(e, l);
 		} else {
