@@ -59,21 +59,13 @@ public class GSMenu extends JMenuBar{
 		
 			JMenuItem save = new JMenuItem("Save");
 			save.setMnemonic(KeyEvent.VK_S);
-			save.addActionListener((e) -> {try {
-				GlobalState.saveFile();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}});
+			save.addActionListener((e) -> GlobalState.saveFile());
 			
 		fileMenu.add(save);
 		
 			JMenuItem load = new JMenuItem("Load");
 			load.setMnemonic(KeyEvent.VK_L);
-			load.addActionListener((e) -> {try {
-				GlobalState.loadFile();
-			} catch (IOException | ClassNotFoundException e1) {
-				e1.printStackTrace();
-			}});
+			load.addActionListener((e) -> GlobalState.loadFile());
 			
 		fileMenu.add(save);
 		fileMenu.add(load);

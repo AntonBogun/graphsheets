@@ -1,7 +1,6 @@
 package fi.graphsheets.ui;
 
 import java.awt.Cursor;
-import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -11,10 +10,13 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -22,7 +24,6 @@ import javax.swing.JLayer;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
-import fi.graphsheets.graphelements.Cell;
 import fi.graphsheets.graphelements.Graph;
 import fi.graphsheets.graphelements.Node;
 import fi.graphsheets.ui.graph.GraphContainerFactory;
@@ -36,6 +37,7 @@ public class GlobalState {
 	private volatile static boolean addImage;
 	public volatile static BufferedImage clipboardImage;
 	public volatile static Node firstEdgeNode;
+	public volatile static File prevFile;
 	public static synchronized void initaliseState(JFrame frame, Graph rootGraph) {
 		GlobalState.frame = frame;
 		GlobalState.rootGraph = rootGraph;
@@ -86,8 +88,9 @@ public class GlobalState {
 		frame.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 	}
 	
-	public static synchronized void saveFile() throws IOException {
+	public static synchronized void saveFile() {
 		JFileChooser chooser = new JFileChooser();
+		chooser.setSelectedFile(prevFile);
 		chooser.setFileFilter(new FileFilter() {
 
 			@Override
@@ -107,33 +110,55 @@ public class GlobalState {
 		
 		if(chooser.showOpenDialog(new JFrame()) == JFileChooser.APPROVE_OPTION) {
 			File file = chooser.getSelectedFile();
+			String[] options = {"Yes", "No"};
 
-			if(!chooser.getSelectedFile().getAbsolutePath().endsWith(".gsf")){
-			    file = new File(chooser.getSelectedFile() + ".gsf");
+
+			if(!file.getAbsolutePath().endsWith(".gsf")){
+			    file = new File(file + ".gsf");
 			}
 			
-			String[] options = {"Yes", "No"};
-			if(file.exists() && 
+			if(file.exists() &&
 					JOptionPane.showOptionDialog(new JFrame(), "The file " + file.getName() + " already exists. Override?", 
-							"File exists", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]) == JOptionPane.NO_OPTION) return;
+								"File exists", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, 
+									options[1]) == JOptionPane.NO_OPTION) return;
 			
-			FileOutputStream fout = new FileOutputStream(file);
+			
+			try {
+				File outFile = new File(file + "~");
+				
+				FileOutputStream fout = new FileOutputStream(outFile);
 
-			BufferedOutputStream bout = new BufferedOutputStream(fout);
+				BufferedOutputStream bout = new BufferedOutputStream(fout);
+				
+				ObjectOutputStream output = new ObjectOutputStream(bout);
+				
+				output.writeObject(GlobalState.rootGraph);
+				
+				output.close();
+				
+				fout.close();
+
+				file.delete();
+				
+				outFile.renameTo(file);
+				
+			} catch (IOException e) {
+				StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw));
+				String exceptionAsString = sw.toString();
+				JOptionPane.showMessageDialog(new JFrame(), "Error occured while saving graphsheet. \n" + exceptionAsString, "Error", JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace();
+			}
+
 			
-			ObjectOutputStream output = new ObjectOutputStream(bout);
-			
-			output.writeObject(GlobalState.rootGraph);
-			
-			output.close();
-			
-			fout.close();
+			prevFile = file;
 			
 		}
 	}
 
-	public static synchronized void loadFile() throws IOException, ClassNotFoundException {
+	public static synchronized void loadFile() {
 		JFileChooser chooser = new JFileChooser();
+		chooser.setSelectedFile(prevFile);
 		chooser.setFileFilter(new FileFilter() {
 
 			@Override
@@ -151,26 +176,54 @@ public class GlobalState {
 		
 		if(chooser.showOpenDialog(new JFrame()) == JFileChooser.APPROVE_OPTION) {
 			
-			FileInputStream fin = new FileInputStream(chooser.getSelectedFile());
+			prevFile = chooser.getSelectedFile();
+			
+			try {
 
-			BufferedInputStream bin = new BufferedInputStream(fin);
-			
-			ObjectInputStream input = new ObjectInputStream(bin);
-			
-			Graph graph = (Graph) input.readObject();
-			
-			GlobalState.rootGraph.replaceGraph(graph);
-			
-			frame.getContentPane().removeAll();
-			
-			JLayer<? extends AbstractZoomableContainer> layer = GraphContainerFactory.createZoomableGraphContainer(graph, true);
-			
-			frame.add(layer);
-			
-			frame.revalidate();
-			frame.repaint();
+				FileInputStream fin;
+				
+				fin = new FileInputStream(chooser.getSelectedFile());
+				
+				BufferedInputStream bin = new BufferedInputStream(fin);
+				
+				try (ObjectInputStream input = new ObjectInputStream(bin)) {
+					Graph graph;
+					graph = (Graph) input.readObject();
+					
+					GlobalState.rootGraph.replaceGraph(graph);
+					
+					frame.getContentPane().removeAll();
+					
+					JLayer<? extends AbstractZoomableContainer> layer = GraphContainerFactory.createZoomableGraphContainer(graph, true);
+					
+					frame.add(layer);
+					
+					frame.revalidate();
+					frame.repaint();
+				}
+
+			} catch (ClassNotFoundException e) {
+				StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw));
+				String exceptionAsString = sw.toString();
+				JOptionPane.showMessageDialog(new JFrame(), "Graphsheet versions are incompatible(?!) \n" + exceptionAsString, "Error", JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace();
+			} catch (FileNotFoundException e) {
+				StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw));
+				String exceptionAsString = sw.toString();
+				JOptionPane.showMessageDialog(new JFrame(), "The selected file cannot be found. \n" + exceptionAsString, "Error", JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace();
+			} catch (IOException e) {
+				StringWriter sw = new StringWriter();
+				e.printStackTrace(new PrintWriter(sw));
+				String exceptionAsString = sw.toString();
+				JOptionPane.showMessageDialog(new JFrame(), "Error occured while loading graphsheet. \n" + exceptionAsString, "Error", JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace();
+			} 
 			
 		}
+		
 	}
 
 	public static void addImageFromClipboard() {

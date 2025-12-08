@@ -11,6 +11,7 @@ import javax.swing.JLayer;
 import javax.swing.JOptionPane;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 
 import fi.graphsheets.graphelements.Edge;
 import fi.graphsheets.graphelements.Graph;
@@ -28,7 +29,7 @@ public class Main{
 	public static void main(String[] args) throws InvocationTargetException, InterruptedException {
 		JFrame frame = new JFrame();
 		frame.setTitle("Graphsheets");
-		frame.setDefaultCloseOperation(frame.DO_NOTHING_ON_CLOSE);
+		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 			    int confirmed = JOptionPane.showConfirmDialog(null, 
